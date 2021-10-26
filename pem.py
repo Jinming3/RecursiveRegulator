@@ -2,7 +2,7 @@
 single-output pem of canonical form 
 Functions:
 pemt -- with threshold to stop and restart, redefined N for batches
-peml -- packet-loss situation
+peml -- packet-loss reconstruction
 pemt_pkf -- stop and transmit using PKF
 """
 import numpy as np
