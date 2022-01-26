@@ -6,6 +6,8 @@ peml -- packet-loss reconstruction
 pemt_pkf -- stop and transmit using PKF
 """
 import numpy as np
+import torch
+
 
 
 class PEM(object):
@@ -382,10 +384,15 @@ def R2(Y_sys, Yhat):
     :param Yhat: size N sequence
     :return:
     """
-    s1 = np.sum((Y_sys-Yhat)**2)
-    mean = np.mean(Y_sys)
-    s2 = np.sum((Y_sys-mean)**2)
 
+    if Yhat.dtype == torch:
+        s1 = torch.sum((Y_sys-Yhat)**2)
+        mean = torch.mean(Y_sys)
+        s2 = torch.sum((Y_sys-mean)**2)
+    else:
+        s1 = np.sum((Y_sys-Yhat)**2)
+        mean = np.mean(Y_sys)
+        s2 = np.sum((Y_sys-mean)**2)
     return 1.0 - s1/s2
 
 
