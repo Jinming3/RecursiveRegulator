@@ -1,0 +1,18 @@
+axes.labelsize : 14
+axes.labelpad: 0.5
+xtick.labelsize: 14
+ytick.labelsize: 14
+legend.fontsize: 14
+legend.labelspacing: 0.1
+legend.borderpad: 0.2
+legend.borderaxespad: 0.25
+legend.handletextpad: 0.3
+legend.handlelength: 1
+legend.loc: best
+
+
+
+
+
+
+

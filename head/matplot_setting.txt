@@ -1,0 +1,31 @@
+import matplotlib.pylab as pylab
+params = {
+    # 'figure.figsize': (4.8, 3.7),
+    'axes.labelsize': 11,
+    'axes.labelpad': 0.5,
+    'xtick.labelsize': 11,
+    'ytick.labelsize': 11,
+    'legend.fontsize': 11,
+    'legend.labelspacing': 0.1,
+    'legend.borderpad': 0.2,
+    'legend.borderaxespad': 0.25,
+    'legend.handletextpad': 0.3,
+    'legend.handlelength': 1,
+    'legend.loc': 'lower right',
+
+}
+pylab.rcParams.update(params)
+
+
+
+
+# outside of the picture:
+ax.legend(loc='lower right', bbox_to_anchor=(1.12, 0.0))
+
+# Shrink current axis by 20%
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+
+import matplotlib.pyplot as plt
+plt.style.use('F:/Project/head/tight.mplstyle')
