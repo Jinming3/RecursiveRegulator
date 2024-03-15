@@ -1144,7 +1144,7 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
                         #     break
                         q = q + 1
                 y_nn = x_step[:, 0].clone().detach().numpy()
-                self.factor.pem_one(y[q]*0 - y_nn, y_nn, on=False)  # for pem n-step ahead
+                self.factor.pem_one(0, y_nn, on=False)  # for pem n-step ahead  y[q]*0 - y_nn
 
                 q = q + 1
 
@@ -1218,6 +1218,7 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
 
 
                 y_nn = x_step[:, 0].clone().detach().numpy()
+                # print(q)
                 self.factor.pem_one(y[q]*0 - y_nn, y_nn, on=False)  # for pem n-step ahead
                 q = q + 1
 
