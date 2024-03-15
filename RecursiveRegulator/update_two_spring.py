@@ -14,7 +14,8 @@ sys.path.append(os.path.join("F:/Project/head/"))
 import header
 from pem import PEM  # _step as PEM
 from pem import normalize, R2
-from header import MechanicalSystem, ForwardEulerPEM
+from header import MechanicalSystem, ForwardEulerPEM, ForwardEuler
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 #   ---- motion----
@@ -79,7 +80,7 @@ k2_all = []
 d1_all = []
 d2_all = []
 
-time_all = 120
+time_all = 150
 dt = 0.05
 N = int(time_all / dt)
 time_exp = np.arange(N) * dt
@@ -109,9 +110,9 @@ changing = changing.astype(int)
 # # #  --- system changing ---
 # # # --- original ------
 sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
-
+scale = 10e-3
 for i in range(changing[0]):
-    y = sampling.measure(ref=sinwave, noise_process=10e-6, noise_measure=10e-6)
+    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -128,7 +129,7 @@ k2 = k2 * 0.98
 d1 = d1 * 0.96
 d2 = d2 * 0.98
 for i in range(changing[0], changing[1]):
-    y = sampling.measure(ref=sinwave, noise_process=10e-6, noise_measure=10e-6)
+    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -145,7 +146,7 @@ k2 = k2 * 0.96
 d1 = d1 * 0.99
 d2 = d2 * 0.98
 for i in range(changing[1], changing[2]):
-    y = sampling.measure(ref=sinwave, noise_process=10e-6, noise_measure=10e-6)
+    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -162,7 +163,7 @@ k2 = k2 * 0.96
 d1 = d1 * 0.99
 d2 = d2 * 0.98
 for i in range(changing[2], N):
-    y = sampling.measure(ref=sinwave, noise_process=10e-6, noise_measure=10e-6)
+    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -286,6 +287,9 @@ optimizer = torch.optim.Adam([
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
 
+
+
+
 threshold1 = 0.97  # start retrain, R2
 threshold2 = 0.98  # stop retrain
 factor = PEM(2, 6, N)
@@ -297,7 +301,7 @@ factor.Thehat_old = np.random.rand(6, 1) * 0.1
 factor.Xhat_old = np.array([[2], [0]])
 
 # simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=2,threshold1=threshold1, threshold2=threshold2) #optimizer=optimizer,
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=8,threshold1=threshold1, threshold2=threshold2) #optimizer=optimizer,
 # simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=5, threshold1=threshold1, threshold2=threshold2)
 
 
@@ -311,6 +315,20 @@ x0 = x_fit[[0], :].detach()
 
 u = torch.tensor(U[:, None, :])  # [:, None, :]
 y = Y_sys[:, np.newaxis]
+
+
+simulator0 = ForwardEuler(model=model, dt=dt)
+start_time = time.time()
+with torch.no_grad():
+    xhat0 = simulator0(x0, u)
+    xhat0 = xhat0.detach().numpy()
+    xhat0 = xhat0.squeeze(1)
+    yhat0 = xhat0[:, 0]
+    # yhat0=yhat0[:, None]
+print(f"\n NN  time: {time.time() - start_time:.2f}")
+
+
+
 start_time = time.time()
 xhat_data = simulator(x0, u, y)
 print(f"\nTrain time: {time.time() - start_time:.2f}")
@@ -331,7 +349,7 @@ print(f'stop at {stop}')
 
 # np.savetxt('yhat0_two_spring.txt', yhat)
 
-yhat0 = np.loadtxt('yhat0_two_spring.txt')
+# yhat0 = np.loadtxt('yhat0_two_spring.txt')
 
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
 fig, ax = plt.subplots(3, 1, sharex=True)
