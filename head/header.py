@@ -91,7 +91,7 @@ class ForwardEuler(nn.Module):  # to train
 class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
 
     def __init__(self, model, factor, dt, N, update, threshold1=0, threshold2=0,
-                 sensitivity=600, step=1, train=2000, param=np.array):  # sensitivity=100
+                 sensitivity=600,  train=2000):  # sensitivity=100
 
         super(ForwardEulerPEM, self).__init__()
         self.factor = factor
@@ -100,7 +100,7 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
         self.N = N
 
         self.update = update  # choose case
-        self.step = step
+        
         self.train = train
         self.threshold1 = threshold1  # start update
         self.threshold2 = threshold2  # stop update
@@ -108,7 +108,7 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
         self.stop = []
         self.correction = []
         self.xhat_data = np.zeros((N, 2))
-        self.param = [param]
+       
 
     def forward(self, x0: torch.Tensor, u: torch.Tensor, y):
         x_step = x0
