@@ -27,9 +27,9 @@ d1 = 1
 d2 = 5
 Fc = 0.05 # 20.3935
 
-def sinwave(dt, i, w=0.1):
+def sinwave(dt, i, w=0.5): # 0.1
     # A = 5.0
-    A = 2.0
+    A = 2#2.0
     x = A * np.cos(w * i * math.pi * dt)
     # x = A * np.sin(w*i * math.pi* dt)
     return x
@@ -82,7 +82,7 @@ class Motion:
         self.acc2 = acc2
         self.dt = dt
 
-    def get_y(self, noise_process=0.0, noise_measure=0.0):
+    def get_y(self,  noise_process=0.0, noise_measure=0.0):
         self.u = sinwave(self.dt, i)
         # self.u = 5.0
         self.acc1 = -(k1 + k2 / m1) * self.pos1 - (d1 + d2) / m1 * self.vel1 + k2 / m1 * self.pos2 + d2 / m1 * self.vel2 - Fc / m1 * np.sign(
@@ -161,7 +161,7 @@ def vel(pos):
 v_est = vel(Y_sys)
 dt = torch.tensor(dt, dtype=torch.float32)  #
 # # -----------------------------------------------------------------------
-system = 'two_spring_motion'
+system = 'two_spring_motion5'
 num_epoch = 10000
 batch_num = 64
 batch_length = 32

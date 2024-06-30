@@ -19,9 +19,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 #   ---- motion----
-def sinwave(dt, i, w=0.1):
+def sinwave(dt, i, w, A): #=0.1,=1.0
     # out = []
-    A = 5
+
     # for k in range(int(time / dt)):
     x = A * np.cos(w * i * math.pi * dt)
     # x = A * np.sin(w*k * math.pi* dt)
@@ -30,12 +30,12 @@ def sinwave(dt, i, w=0.1):
 
 
 # -- tri wave ---
-def triangle(dt, i):  # , time_all
+def triangle(dt, i, A=2):  # , time_all
     out = []
     p = 8
     # for k in range(int(time_all / dt)):
     #     x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
-    x = 2 * np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
+    x = A* np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
     # out.append(x)
     return x
 
@@ -50,11 +50,11 @@ class Motion:
         self.acc2 = acc2
         self.dt = dt
 
-    def measure(self,ref, noise_process=0.0, noise_measure=0.0):
-        self.u = ref(self.dt, i)
+    def measure(self,ref, noise_process=0.0, noise_measure=0.0):  # ref is a scalar value, not a function
+        self.u = ref#ref(self.dt, i)
         self.acc1 = -(k1 + k2 / m1) * self.pos1 - (d1 + d2) / m1 * self.vel1 + k2 / m1 * self.pos2 + d2 / m1 * self.vel2 - Fc / m1 * np.sign(self.vel1)
         self.acc2 = k2 / m2 * self.pos1 + d2 / m2 * self.vel1 - k2 / m2 * self.pos2 - d2 / m2 * self.vel2 + 1 / m2 * self.u - Fc / m2 * np.sign(
-            self.vel2) + 0 * np.random.randn() * noise_process
+            self.vel2) + np.random.randn() * noise_process
         self.vel1 = self.vel1 + self.acc1 * self.dt
         self.vel2 = self.vel2 + self.acc2 * self.dt
         self.pos1 = self.pos1 + self.vel1 * self.dt
@@ -85,7 +85,7 @@ dt = 0.05
 N = int(time_all / dt)
 time_exp = np.arange(N) * dt
 # changing = np.array([20, 50]) / dt
-changing = np.array([20, 70, 100]) / dt
+changing = np.array([20, 40, 55, 70, 100]) / dt
 # changing = np.array([90]) / dt # time_all
 changing = changing.astype(int)
 
@@ -111,8 +111,8 @@ changing = changing.astype(int)
 # # # --- original ------
 sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
 scale = 10e-3
-for i in range(changing[0]):
-    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
+for i in range(changing[0]): # original condition with noise
+    y = sampling.measure(ref=sinwave(dt=dt, i=i, w=0.5, A=2), noise_process=scale*0.1, noise_measure=scale*0.01)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -129,7 +129,7 @@ k2 = k2 * 0.98
 d1 = d1 * 0.96
 d2 = d2 * 0.98
 for i in range(changing[0], changing[1]):
-    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
+    y = sampling.measure(ref=sinwave(dt=dt, i=i, w=0.5, A=1), noise_process=scale*0.1, noise_measure=scale*0.01)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -139,14 +139,43 @@ for i in range(changing[0], changing[1]):
     d1_all.append(d1)
     d2_all.append(d2)
 
+for i in range(changing[1], changing[2]):
+    y = sampling.measure(ref=1, noise_process=scale*0.1, noise_measure=scale*0.001)
+    Y_sys.append(y)
+    U.append(sampling.u)
+    m1_all.append(m1)
+    m2_all.append(m2)
+    k1_all.append(k1)
+    k2_all.append(k2)
+    d1_all.append(d1)
+    d2_all.append(d2)
 m1 = m1 * 0.95
 m2 = m2 * 0.98
 k1 = k1 * 0.96
 k2 = k2 * 0.96
 d1 = d1 * 0.99
 d2 = d2 * 0.98
-for i in range(changing[1], changing[2]):
-    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
+for i in range(changing[2], changing[3]):
+    y = sampling.measure(ref=-1, noise_process=scale*0.1, noise_measure=scale*0.001)
+    Y_sys.append(y)
+    U.append(sampling.u)
+    m1_all.append(m1)
+    m2_all.append(m2)
+    k1_all.append(k1)
+    k2_all.append(k2)
+    d1_all.append(d1)
+    d2_all.append(d2)
+
+# m1 = m1 * 0.9
+# m2 = m2 * 0.8
+# k1 = k1 * 0.9
+# k2 = k2 * 0.9
+# d1 = d1 * 0.9
+# d2 = d2 * 0.9
+
+
+for i in range(changing[3], changing[4]):
+    y = sampling.measure(ref=sinwave(dt, i, 1/2, 0.6)+sinwave(dt, i, 1/3, 0.4), noise_process=scale*0.1, noise_measure=scale*0.001)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -160,10 +189,10 @@ m1 = m1 * 0.98
 m2 = m2 * 0.97
 k1 = k1 * 0.98
 k2 = k2 * 0.96
-d1 = d1 * 0.99
-d2 = d2 * 0.98
-for i in range(changing[2], N):
-    y = sampling.measure(ref=sinwave, noise_process=scale, noise_measure=scale*0.01)
+d1 = d1 * 1.99
+d2 = d2 * 1.98
+for i in range(changing[4], N):
+    y = sampling.measure(ref=sinwave(dt, i, 0.1, 0.6), noise_process=scale*0.1, noise_measure=scale*0.001)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -272,7 +301,7 @@ U = U[:, np.newaxis]
 dt = torch.tensor(dt, dtype=torch.float32)
 
 lr = 0.0001  # not used in PEM updateing
-system = 'two_spring_motion'
+system = 'two_spring_motion5'
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
 model = MechanicalSystem(dt=dt)  #
@@ -290,8 +319,8 @@ model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=
 
 
 
-threshold1 = 0.97  # start retrain, R2
-threshold2 = 0.98  # stop retrain
+threshold1 = 1#0.97  # start retrain, R2
+threshold2 = 1#0.98  # stop retrain
 factor = PEM(2, 6, N)
 factor.P_old2 *= 0.9
 factor.Psi_old2 *= 0.9
@@ -301,7 +330,7 @@ factor.Thehat_old = np.random.rand(6, 1) * 0.1
 factor.Xhat_old = np.array([[2], [0]])
 
 # simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=8,threshold1=threshold1, threshold2=threshold2) #optimizer=optimizer,
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=1,threshold1=threshold1, threshold2=threshold2) #optimizer=optimizer,
 # simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=5, threshold1=threshold1, threshold2=threshold2)
 
 
@@ -350,11 +379,11 @@ print(f'stop at {stop}')
 # np.savetxt('yhat0_two_spring.txt', yhat)
 
 # yhat0 = np.loadtxt('yhat0_two_spring.txt')
-
+print("nn R^2 = ", R2(Y_sys, yhat0))
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
 fig, ax = plt.subplots(3, 1, sharex=True)
 ax[0].plot(time_exp, Y_sys, 'g', label='y')
-ax[0].plot(time_exp, yhat0, 'r--', label='$\~{y}_{NN}$')
+ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
 ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[0].set_ylabel("(a)")
 ax[0].legend(loc=4)
