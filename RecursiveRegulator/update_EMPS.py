@@ -201,10 +201,11 @@ for i in range(changing[0]):
     Fc_all.append(Fc)
     ref_signal.append(p_ref[i])
 
+aging = 0.85
 offset = offset * 0.99
-M = M * 0.9
-Fv = Fv * 0.9
-Fc = Fc * 0.9
+M = M * aging
+Fv = Fv * aging
+Fc = Fc * aging
 for i in range(changing[0], changing[1]):
     y = sampling.measure(p_ref[i], noise_process=10 ** -3, noise_measure=10 ** -4)
     Y_sys.append(y)
@@ -280,8 +281,10 @@ with torch.no_grad():
     xhat0 = xhat0.squeeze(1)
     yhat0 = xhat0[:, 0]
 
-threshold1 = 0.90  # start retrain, R2
-threshold2 = 0.98  # stop retrain
+
+threshold1 = 1 #0.90  # start retrain, R2
+# threshold2 = 0.98  # stop retrain
+threshold2 = 1  # stop retrain
 # threshold2 = 0.97  # stop retrain
 factor = PEM(2, 6, N)
 factor.P_old2 *= 0.09
@@ -321,21 +324,18 @@ print(f'stop at {stop}')
 # Thehat = factor.Thehat_data
 # ------ <<<--------------------------------------
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
-
-
-# yhat0 = np.loadtxt('yhat0_emps.txt')
-# yhat0 = np.loadtxt('yhat05.txt')
+print('nn r2=', R2(Y_sys, yhat0))
 fig, ax = plt.subplots(4, 1, sharex=True)
 ax[0].plot(time_exp, Y_sys, 'g', label='y')
-ax[0].plot(time_exp, yhat0, 'r--', label='$\~y_{NN}$')
+ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
 ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[0].set_ylabel("(a)")
-ax[0].legend(bbox_to_anchor=(1.141, 0.7))
+ax[0].legend(bbox_to_anchor=(0.9, 0.5))
 ax[1].plot(time_exp, Y_sys, 'g', label='y')
 ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[1].set_ylabel("(b)")
-ax[1].legend(bbox_to_anchor=(1.11, 0.8))
+ax[1].legend(bbox_to_anchor=(0.9, 0.6))
 ax[2].plot(time_exp, U, 'k', label='u')
 # ax[1].plot(time_exp[changing], U[changing], 'kx', label='changing')
 ax[2].set_ylabel("(c)")
@@ -344,29 +344,29 @@ ax[3].plot(time_exp, ref_signal, 'k', label='ref')  #
 ax[3].legend()
 ax[3].set_ylabel("(d)")
 ax[3].set_xlabel('time(s)')
-#
-fig, ax = plt.subplots(6, 1, sharex=True)
-ax[0].plot(time_exp, Thehat[:, 0], 'g', label='a0')
-ax[0].plot(time_exp[changing], Thehat[changing, 0], 'kx')
-# ax[0].plot(time_exp[correction], Thehat[correction, 0], 'yx')
-# ax[0].plot(time_exp[stop], Thehat[stop, 0], 'mx')
-ax[0].legend()
-ax[1].plot(time_exp, Thehat[:, 1], 'g', label='a1')
-ax[1].plot(time_exp[changing], Thehat[changing, 1], 'kx')
-ax[1].legend()
-ax[2].plot(time_exp, Thehat[:, 2], 'b', label='b0')
-ax[2].plot(time_exp[changing], Thehat[changing, 2], 'kx')
-ax[2].legend()
-ax[3].plot(time_exp, Thehat[:, 3], 'b', label='b1')
-ax[3].plot(time_exp[changing], Thehat[changing, 3], 'kx')
-ax[3].legend()
-ax[4].plot(time_exp, Thehat[:, 4], 'k', label='k0')
-ax[4].plot(time_exp[changing], Thehat[changing, 4], 'kx')
-ax[4].legend()
-ax[5].plot(time_exp, Thehat[:, 5], 'k', label='k1')
-ax[5].plot(time_exp[changing], Thehat[changing, 5], 'kx')
-ax[5].legend()
-ax[5].set_xlabel('time(s)')
+# #
+# fig, ax = plt.subplots(6, 1, sharex=True)
+# ax[0].plot(time_exp, Thehat[:, 0], 'g', label='a0')
+# ax[0].plot(time_exp[changing], Thehat[changing, 0], 'kx')
+# # ax[0].plot(time_exp[correction], Thehat[correction, 0], 'yx')
+# # ax[0].plot(time_exp[stop], Thehat[stop, 0], 'mx')
+# ax[0].legend()
+# ax[1].plot(time_exp, Thehat[:, 1], 'g', label='a1')
+# ax[1].plot(time_exp[changing], Thehat[changing, 1], 'kx')
+# ax[1].legend()
+# ax[2].plot(time_exp, Thehat[:, 2], 'b', label='b0')
+# ax[2].plot(time_exp[changing], Thehat[changing, 2], 'kx')
+# ax[2].legend()
+# ax[3].plot(time_exp, Thehat[:, 3], 'b', label='b1')
+# ax[3].plot(time_exp[changing], Thehat[changing, 3], 'kx')
+# ax[3].legend()
+# ax[4].plot(time_exp, Thehat[:, 4], 'k', label='k0')
+# ax[4].plot(time_exp[changing], Thehat[changing, 4], 'kx')
+# ax[4].legend()
+# ax[5].plot(time_exp, Thehat[:, 5], 'k', label='k1')
+# ax[5].plot(time_exp[changing], Thehat[changing, 5], 'kx')
+# ax[5].legend()
+# ax[5].set_xlabel('time(s)')
 # ----------- degenerating physical parameters --------
 # fig, ax = plt.subplots(3, 1, sharex=True)
 # ax[0].plot(M_all, 'g', label='M')
@@ -376,20 +376,20 @@ ax[5].set_xlabel('time(s)')
 # ax[2].plot(Fv_all, 'k', label='Fv')
 # ax[2].legend()
 
-simulator.y_pem = np.array(simulator.y_pem)
-simulator.y_pem0 = np.array(simulator.y_pem0)
-ts = 0.005
-plt.figure()
-# plt.plot(time_exp, simulator.y_pem, 'r', label='$\hat{y}_{pem}$')
-# plt.plot(time_exp, simulator.y_pem0, 'g', label='$\hat{y}_{pem0}$')
-plt.plot(simulator.y_pem[:, 1]*ts, simulator.y_pem[:, 0], 'r', label=r'$\bar{y}_{pem}$')
-plt.plot(simulator.y_pem0[:, 1]*ts, simulator.y_pem0[:, 0], 'g', label='PEM disabled')
-# plt.plot(simulator.y_pem[:, 0], 'r-', label='$\hat{y}_{pem}$')
-# plt.plot(simulator.y_pem0[:, 0], 'g-', label='$\hat{y}_{pem}0$')
-# plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
-# plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
-plt.xlabel('time(s)')
-plt.legend()
+# simulator.y_pem = np.array(simulator.y_pem)
+# simulator.y_pem0 = np.array(simulator.y_pem0)
+# ts = 0.005
+# plt.figure()
+# # plt.plot(time_exp, simulator.y_pem, 'r', label='$\hat{y}_{pem}$')
+# # plt.plot(time_exp, simulator.y_pem0, 'g', label='$\hat{y}_{pem0}$')
+# plt.plot(simulator.y_pem[:, 1]*ts, simulator.y_pem[:, 0], 'r', label=r'$\bar{y}_{pem}$')
+# plt.plot(simulator.y_pem0[:, 1]*ts, simulator.y_pem0[:, 0], 'g', label='PEM disabled')
+# # plt.plot(simulator.y_pem[:, 0], 'r-', label='$\hat{y}_{pem}$')
+# # plt.plot(simulator.y_pem0[:, 0], 'g-', label='$\hat{y}_{pem}0$')
+# # plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
+# # plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
+# plt.xlabel('time(s)')
+# plt.legend()
 
 # simulator.correction = np.array(simulator.correction)
 # simulator.stop = np.array(simulator.stop)
@@ -399,10 +399,10 @@ plt.legend()
 # plt.xlabel('time(s)')
 # plt.legend()
 
-plt.figure()
-plt.plot(simulator.r2, 'r', label='$R^2$')  # time_exp,
-plt.xlabel('time(s)')
-plt.legend()
+# plt.figure()
+# plt.plot(simulator.r2, 'r', label='$R^2$')  # time_exp,
+# plt.xlabel('time(s)')
+# plt.legend()
 #
 # plt.figure()
 # plt.plot(np.abs(simulator.err), 'r', label='$error$')  # time_exp,
