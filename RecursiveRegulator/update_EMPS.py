@@ -273,6 +273,8 @@ optimizer = torch.optim.Adam([
 ], lr=lr * 10)
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
+start_time = time.time()
+
 
 simulator0 = ForwardEuler(model=model, dt=dt)
 with torch.no_grad():
@@ -280,7 +282,7 @@ with torch.no_grad():
     xhat0=xhat0.detach().numpy()
     xhat0 = xhat0.squeeze(1)
     yhat0 = xhat0[:, 0]
-
+print(f"\n NN Train time: {time.time() - start_time:.2f}")
 
 threshold1 = 1 #0.90  # start retrain, R2
 # threshold2 = 0.98  # stop retrain

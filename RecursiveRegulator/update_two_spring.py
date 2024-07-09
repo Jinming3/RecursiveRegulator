@@ -85,7 +85,7 @@ dt = 0.05
 N = int(time_all / dt)
 time_exp = np.arange(N) * dt
 # changing = np.array([20, 50]) / dt
-changing = np.array([20, 40, 55, 70, 100]) / dt
+changing = np.array([20, 40, 55, 70, 100, 125]) / dt
 # changing = np.array([90]) / dt # time_all
 changing = changing.astype(int)
 
@@ -191,8 +191,32 @@ k1 = k1 * 0.98
 k2 = k2 * 0.96
 d1 = d1 * 1.99
 d2 = d2 * 1.98
-for i in range(changing[4], N):
+for i in range(changing[4], changing[5]):
     y = sampling.measure(ref=sinwave(dt, i, 0.1, 0.6), noise_process=scale*0.1, noise_measure=scale*0.001)
+    Y_sys.append(y)
+    U.append(sampling.u)
+    m1_all.append(m1)
+    m2_all.append(m2)
+    k1_all.append(k1)
+    k2_all.append(k2)
+    d1_all.append(d1)
+    d2_all.append(d2)
+# m1 = 20
+# m2 = 20
+# k1 = 1000
+# k2 = 2000
+# d1 = 1
+# d2 = 5
+
+m1 = m1 / math.sqrt(m1)
+m2 = m2 * math.sqrt(m2)
+k1 = k1 - math.sqrt(k1)
+k2 = k2 -k2**(-2)
+d1 = d1 * 1.99
+d2 = d2 * 1.98
+
+for i in range(changing[5], N):
+    y = sampling.measure(ref=sinwave(dt=dt, i=i, w=0.5, A=2), noise_process=scale*0.1, noise_measure=scale*0.001)
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
