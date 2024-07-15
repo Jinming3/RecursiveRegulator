@@ -278,28 +278,32 @@ time_exp = np.arange(N) * ts *10**(6)
 # ax[2].legend(loc=4)
 
 
-fig, ax = plt.subplots(3, 1, sharex=True)
+fig, ax = plt.subplots(2, 1, sharex=True)
 ax[0].plot(time_exp, Y_sys, 'g', label='y')
-ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
+# ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
+ax[0].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
 ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[0].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
+ax[0].legend(bbox_to_anchor=(0.9, 0.6))  #
 ax[0].set_ylabel("(a)")
-ax[0].legend(bbox_to_anchor=(1.141, 0.7))  #
+
 
 ax[1].plot(time_exp[p:N], Y_sys[p:N], 'g', label='y')
-ax[1].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
+# ax[1].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
+ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
+
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[1].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
 ax[1].set_ylabel("(b)")
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))  #
-
-ax[2].plot(time_exp, Y_sys, 'g', label='y')
-ax[2].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-ax[2].plot(time_exp[changing], Y_sys[changing], 'kx')
-ax[2].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
-ax[2].set_ylabel("(c)")
-ax[2].legend(bbox_to_anchor=(1.11, 0.8))  #
-ax[2].set_xlabel('time($\mu s$)')
+ax[1].set_xlabel('time($\mu s$)')
+# ax[2].plot(time_exp, Y_sys, 'g', label='y')
+# ax[2].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
+# ax[2].plot(time_exp[changing], Y_sys[changing], 'kx')
+# ax[2].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
+# ax[2].set_ylabel("(c)")
+# ax[2].legend(bbox_to_anchor=(1.11, 0.8))  #
+# ax[2].set_xlabel('time($\mu s$)')
 
 
 

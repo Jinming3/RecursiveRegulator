@@ -142,10 +142,10 @@ time_exp = np.arange(N) * dt
 
 train_time = int(25/ dt)
 
-train_time=N
-update = 5  # original update,  yhat_pem add to x_step, use this
+# train_time=N
+# update = 5  # original update,  yhat_pem add to x_step, use this
 
-# update = 8 # stop at self.train, pem in s_step
+update = 8 # stop at self.train, pem in s_step
 
 
 changing = changing.astype(int)
@@ -229,7 +229,7 @@ M_all = []
 Fc_all = []
 Fv_all = []
 ref_signal = []
-aging_factor=0.9
+aging_factor=0.85
 scale = 10**-3
 sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
 for i in range(changing[0]):
@@ -590,24 +590,24 @@ plt.legend()
 
 
 # print("inference simple R^2 = ", R2(Y_sys[:, 0], yhat_s[:, 0]))  #
-fig, ax = plt.subplots(3, 1, sharex=True)
-ax[0].plot(time_exp, Y_sys, 'g', label='y')
-ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
-ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
-ax[0].set_ylabel("(a)")
-ax[0].legend(bbox_to_anchor=(0.9, 0.7))  #
-ax[1].plot(time_exp, Y_sys, 'g', label='y')
-ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
-ax[1].set_ylabel("(b)")
-ax[1].legend(bbox_to_anchor=(0.9, 0.6))  #
-ax[2].plot(simulator.y_pem[:, 1]* ts , simulator.y_pem[:, 0], 'r', label=r"$ss_{update}$")  #
-ax[2].plot(simulator.y_pem0[:, 1]* ts , simulator.y_pem0[:, 0], 'g', label=r"$ss$")
-# ax[2].plot(time_exp, U, 'k', label='u')
-plt.ticklabel_format(axis='y', style='sci', scilimits=(1, 3))
-ax[2].set_ylabel("(c)")
-ax[2].legend(loc='upper left')  # bbox_to_anchor=(1.11, 0.8), fontsize=13
-ax[2].set_xlabel('time(s)')
+# fig, ax = plt.subplots(3, 1, sharex=True)
+# ax[0].plot(time_exp, Y_sys, 'g', label='y')
+# ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
+# ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
+# ax[0].set_ylabel("(a)")
+# ax[0].legend(bbox_to_anchor=(0.9, 0.7))  #
+# ax[1].plot(time_exp, Y_sys, 'g', label='y')
+# ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
+# ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
+# ax[1].set_ylabel("(b)")
+# ax[1].legend(bbox_to_anchor=(0.9, 0.6))  #
+# ax[2].plot(simulator.y_pem[:, 1]* ts , simulator.y_pem[:, 0], 'r', label=r"$ss_{update}$")  #
+# ax[2].plot(simulator.y_pem0[:, 1]* ts , simulator.y_pem0[:, 0], 'g', label=r"$ss$")
+# # ax[2].plot(time_exp, U, 'k', label='u')
+# plt.ticklabel_format(axis='y', style='sci', scilimits=(1, 3))
+# ax[2].set_ylabel("(c)")
+# ax[2].legend(loc='upper left')  # bbox_to_anchor=(1.11, 0.8), fontsize=13
+# ax[2].set_xlabel('time(s)')
 # ax[3].plot(time_exp, ref_signal, 'k', label='ref')
 # ax[3].set_ylabel("(d)")
 # ax[3].legend()  # bbox_to_anchor=(1.11, 0.8)
@@ -615,28 +615,30 @@ ax[2].set_xlabel('time(s)')
 # yhat0 = np.loadtxt('yhat0_emps.txt')
 # yhat0 = np.loadtxt('yhat05.txt')
 
-fig, ax = plt.subplots(3, 1, sharex=True)
+fig, ax = plt.subplots(2, 1, sharex=True)
 ax[0].plot(time_exp, Y_sys, 'g', label='y')
-ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
+# ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
+ax[0].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
 ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[0].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
 ax[0].set_ylabel("(a)")
 ax[0].legend()  # bbox_to_anchor=(1.141, 0.7)
 
 ax[1].plot(time_exp[p:N], Y_sys[p:N], 'g', label='y')
-ax[1].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
+# ax[1].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
+ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[1].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
 ax[1].set_ylabel("(b)")
 ax[1].legend()  #bbox_to_anchor=(1.141, 0.7)
-
-ax[2].plot(time_exp, Y_sys, 'g', label='y')
-ax[2].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-ax[2].plot(time_exp[changing], Y_sys[changing], 'kx')
-ax[2].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
-ax[2].set_ylabel("(c)")
-ax[2].legend()  # bbox_to_anchor=(1.11, 0.8)
-ax[2].set_xlabel('time(s)')
+ax[1].set_xlabel('time(s)')
+# ax[2].plot(time_exp, Y_sys, 'g', label='y')
+# ax[2].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
+# ax[2].plot(time_exp[changing], Y_sys[changing], 'kx')
+# ax[2].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
+# ax[2].set_ylabel("(c)")
+# ax[2].legend()  # bbox_to_anchor=(1.11, 0.8)
+# ax[2].set_xlabel('time(s)')
 
 #   # compare to y=yk-1
 # fig, ax = plt.subplots(2, 1, sharex=True)
@@ -703,19 +705,19 @@ ax[2].set_xlabel('time(s)')
 # # ax[2].plot(Fv_all, 'k', label='Fv')
 # # ax[2].legend()
 #
-simulator.y_pem = np.array(simulator.y_pem)
-simulator.y_pem0 = np.array(simulator.y_pem0)
-plt.figure()
-# plt.plot(time_exp, simulator.y_pem, 'r', label='$\hat{y}_{pem}$')
-# plt.plot(time_exp, simulator.y_pem0, 'g', label='$\hat{y}_{pem0}$')
-plt.plot(simulator.y_pem[:, 1]* ts , simulator.y_pem[:, 0], 'r', label=r"$\bar{y}_{pem}(update)$")  #
-plt.plot(simulator.y_pem0[:, 1]* ts , simulator.y_pem0[:, 0], 'g', label=r"$\bar{y}_{pem}(disable)$")
-# plt.plot(simulator.y_pem[:, 0], 'r-', label='$\hat{y}_{pem}$')
-# plt.plot(simulator.y_pem0[:, 0], 'g-', label='$\hat{y}_{pem}0$')
-# plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
-# plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
-plt.xlabel('time(s)')
-plt.legend()
+# simulator.y_pem = np.array(simulator.y_pem)
+# simulator.y_pem0 = np.array(simulator.y_pem0)
+# plt.figure()
+# # plt.plot(time_exp, simulator.y_pem, 'r', label='$\hat{y}_{pem}$')
+# # plt.plot(time_exp, simulator.y_pem0, 'g', label='$\hat{y}_{pem0}$')
+# plt.plot(simulator.y_pem[:, 1]* ts , simulator.y_pem[:, 0], 'r', label=r"$\bar{y}_{pem}(update)$")  #
+# plt.plot(simulator.y_pem0[:, 1]* ts , simulator.y_pem0[:, 0], 'g', label=r"$\bar{y}_{pem}(disable)$")
+# # plt.plot(simulator.y_pem[:, 0], 'r-', label='$\hat{y}_{pem}$')
+# # plt.plot(simulator.y_pem0[:, 0], 'g-', label='$\hat{y}_{pem}0$')
+# # plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
+# # plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
+# plt.xlabel('time(s)')
+# plt.legend()
 #
 # # simulator.correction = np.array(simulator.correction)
 # # simulator.stop = np.array(simulator.stop)
