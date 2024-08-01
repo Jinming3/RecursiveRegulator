@@ -1,6 +1,3 @@
-""""
-
-"""
 import matplotlib
 matplotlib.use('TKAgg')
 import pandas as pd
@@ -14,7 +11,7 @@ import time
 from scipy import signal
 sys.path.append(os.path.join("F:/Project/head/"))
 import header
-from pem import PEM  # _step as PEM
+from pem import PEM  
 from pem import normalize, R2
 from header import NeuralStateSpaceModel, ForwardEulerPEM, ForwardEuler  # MechanicalSystem
 
@@ -30,12 +27,6 @@ params = {
           }
 pylab.rcParams.update(params)
 
-# df_data = pd.read_csv("F:/Project/DATA/RLC/RLC_data_test.csv")
-# Y_sys = np.array(df_data[['V_C']]).astype(np.float32)
-# time_exp = np.array(df_data['time']).astype(np.float32)
-# dt = time_exp[1] - time_exp[0]
-# U = np.array(df_data[['V_IN']]).astype(np.float32)
-# X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
 system = 'RLC_aging'
 np.random.seed(7)
 torch.manual_seed(0)
@@ -71,10 +62,6 @@ class rlc:
 
         output = self.vc
         return output
-
-
-
-
 
 
 # # ------
@@ -192,16 +179,8 @@ factor.Thehat_old = np.random.rand(6, 1) * 0.1
 # print('seed=', np.random.get_state()[1][0])#
 factor.Xhat_old = np.array([[2], [0]])
 
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=1,threshold1=threshold1, threshold2=threshold2) #optimizer=optimizer,
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=1,threshold1=threshold1, threshold2=threshold2) 
 
-
-
-# x_fit = np.zeros((1, n_x), dtype=np.float32)
-# x_fit[0, 0] = np.copy(Y_sys[0, 0])
-# x_fit[0, 1] = 0
-# x_step = x0
-# x0 = torch.tensor(x_fit[[0], :], dtype=torch.float32)
 
 x0 = x_fit[[0], :].detach()
 
@@ -216,7 +195,6 @@ with torch.no_grad():
     xhat0 = xhat0.detach().numpy()
     xhat0 = xhat0.squeeze(1)
     yhat0 = xhat0[:, 0]
-    # yhat0=yhat0[:, None]
 print(f"\n NN  time: {time.time() - start_time:.2f}")
 
 start_time = time.time()
@@ -230,12 +208,6 @@ correction = simulator.correction
 print(f'update at {correction}')
 print(f'stop at {stop}')
 
-# # ->>>---- update == False, optimization outside NN loop, soo faster than stepwise --
-# yhat_stable = xhat_data[:, 0]
-# factor.forward(y, yhat_stable)
-# yhat = factor.Yhat_data
-# Thehat = factor.Thehat_data
-# ------ <<<--------------------------------------
 print("nn R^2 = ", R2(Y_sys[:, 0], yhat0))
 
 print("inference evolution R^2 = ", R2(Y_sys[:, 0], yhat))
@@ -256,11 +228,7 @@ ax[1].set_ylabel("(b)")
 ax[1].legend()
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))
 ax[1].set_xlabel('time($\mu s$)')
-# ax[2].plot(time_exp, U[:, 0, 0], 'k', label='u')
-# ax[2].set_ylabel("(c)")
-# ax[2].set_xlabel('time($\mu s$)')
-# ax[2].legend()
-# ax[2].legend(loc=4)
+
 
 
 
