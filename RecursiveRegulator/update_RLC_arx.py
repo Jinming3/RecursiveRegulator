@@ -11,7 +11,7 @@ import time
 from scipy import signal
 sys.path.append(os.path.join("F:/Project/head/"))
 import header
-from pem import PEM  # _step as PEM
+from pem import PEM  
 from pem import normalize, R2
 from header import NeuralStateSpaceModel, ForwardEulerPEM, ForwardEuler  
 import statsmodels.api as sm
