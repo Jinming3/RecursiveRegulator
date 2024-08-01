@@ -74,7 +74,6 @@ class PEM(object):  #
         self.Thehat = np.zeros((self.t, 1))
 
         self.Thehat_old = np.random.rand(self.t, 1) * 0.1
-        # self.Thehat_old = np.ones((self.t, 1))*0.001
         # --------------------------------------------
         self.P_old2 = np.eye(t, t)*0.09
         self.Psi_old2 = np.eye(t, 1)*0.9
@@ -84,7 +83,6 @@ class PEM(object):  #
         self.I = np.eye(1)
         self.Xhatdot0 = np.zeros((self.n, self.t))
         self.Xhatdot_old = np.zeros((self.n, self.t))
-
 
 
     def pem_one(self, Y_sys, U, on):  # dependent funtion !!!!!!!
@@ -155,10 +153,8 @@ class PEM(object):  #
             self.Yhat = np.copy(Yhat_new)
 
         if not on:  # check if to stop # only KF-predictor no updating
-            # self.Y[:] = Y_sys[q] ####
-            # print(fix)
-            # Xhat_new = np.dot(self.Ahat, self.Xhat)
-            Xhat_new = np.dot(self.Ahat, self.Xhat) + self.Bhat * U# + self.Khat * self.fix  # (self.Y - self.Yhat)  #
+           
+            Xhat_new = np.dot(self.Ahat, self.Xhat) + self.Bhat * U
             Yhat_new = np.dot(self.Chat, Xhat_new)
             self.Xhat_old = np.copy(self.Xhat)
             self.Xhat = np.copy(Xhat_new)
@@ -174,7 +170,6 @@ class PEM(object):  #
         VN0 = 0
         self.N = Y_sys.shape[0]  # reshape if batch calculation
         self.Xhat_data = np.zeros((self.N, self.n))  # collect state estimates
-        # self.Yhat_data = np.zeros(self.N)  # collect prediction
         self.Yhat_data = np.zeros((self.N, self.m))
         self.VN_data = np.zeros(self.N)  # prediction mean squared errors
         self.Yhat_old = np.dot(self.Chat_old, self.Xhat_old)
@@ -193,15 +188,14 @@ class PEM(object):  #
         q = 0
         while q < self.N:
 
-            # self.Y[:] = Y_sys[q]  # read in transmission
-            self.Y = Y_sys[q]
+            self.Y = Y_sys[q]# read in transmission
             for i0 in range(self.n):  # derivative of A
                 self.Xhatdot0[self.n - 1, i0] = self.Xhat_old[i0, 0]
             for i1 in range(self.n):  # of B
                 self.Xhatdot0[i1, self.n + i1] = self.U_old[0]
             for i2 in range(self.n):  # of K
                 self.Xhatdot0[i2, self.n + self.n + i2] = self.Y_old - self.Yhat_old
-                # self.Xhatdot0[i2, self.n + self.n + i2] = self.Y_old[i2, 0] - self.Yhat_old[i2, 0]
+               
 
             Xhatdot = self.Xhatdot0 + np.dot(self.Ahat_old, self.Xhatdot_old) - np.dot(self.Khat_old[:, [0]],
                                                                                        self.Psi_old2.T)
@@ -245,7 +239,7 @@ class PEM(object):  #
             self.Yhat_old = np.copy(self.Yhat)
             self.Yhat = np.copy(Yhat_new)
             # ---------- save data-----------------
-            # self.Yhat_data[q] = self.Yhat[0]
+           
             self.Yhat_data[q] = self.Yhat
             self.Thehat_data[q, :] = np.copy(self.Thehat[:, 0])  # not useful in step optimization
             # self.VN_data[q] = VN
