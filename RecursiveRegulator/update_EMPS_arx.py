@@ -13,7 +13,7 @@ import time
 
 sys.path.append(os.path.join("F:/Project/head/"))
 import header
-from pem import PEM, PEM_mimo  # _step as PEM
+from pem import PEM
 from pem import normalize, R2
 from header import MechanicalSystem, ForwardEulerPEM, ForwardEuler
 import pandas as pd
