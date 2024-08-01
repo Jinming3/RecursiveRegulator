@@ -1,6 +1,5 @@
 
 import matplotlib
-
 import pandas as pd
 import numpy as np
 import torch
@@ -19,24 +18,15 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 #   ---- motion----
-def sinwave(dt, i, w, A): #=0.1,=1.0
-    # out = []
-
-    # for k in range(int(time / dt)):
+def sinwave(dt, i, w, A): 
     x = A * np.cos(w * i * math.pi * dt)
-    # x = A * np.sin(w*k * math.pi* dt)
-    # out.append(x)
     return x
 
 
 # -- tri wave ---
-def triangle(dt, i, A=2):  # , time_all
-    out = []
+def triangle(dt, i, A=2):    
     p = 8
-    # for k in range(int(time_all / dt)):
-    #     x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
     x = A* np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
-    # out.append(x)
     return x
 
 
@@ -84,31 +74,10 @@ time_all = 150
 dt = 0.05
 N = int(time_all / dt)
 time_exp = np.arange(N) * dt
-# changing = np.array([20, 50]) / dt
 changing = np.array([20, 40, 55, 70, 100, 125]) / dt
-# changing = np.array([90]) / dt # time_all
 changing = changing.astype(int)
 
 
-
-# ##--- changing -------------------
-# # # # ---- start original system with no change---
-# sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
-#
-# for i in range(N):
-#     y = sampling.measure(ref=sinwave)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     # m1_all.append(m1)
-#     # m2_all.append(m2)
-#     # k1_all.append(k1)
-#     # k2_all.append(k2)
-#     # d1_all.append(d1)
-#     # d2_all.append(d2)
-
-# -----------------------------------------
-# # #  --- system changing ---
-# # # --- original ------
 sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
 scale = 10e-3
 for i in range(changing[0]): # original condition with noise
@@ -225,97 +194,7 @@ for i in range(changing[5], N):
     k2_all.append(k2)
     d1_all.append(d1)
     d2_all.append(d2)
-# -----------------------------------
-# # # --------------- only one sudden change -------------------
 
-# m1 = m1 * 0.9
-# m2 = m2 * 0.9
-# k1 = k1 * 0.9
-# k2 = k2 * 0.9
-# d1 = d1 * 0.9
-# d2 = d2 * 0.9
-# for i in range(changing[0], N):
-#     y = sampling.measure(ref=sinwave, noise_process=10 ** -3, noise_measure=10 ** -4)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     m1_all.append(m1)
-#     m2_all.append(m2)
-#     k1_all.append(k1)
-#     k2_all.append(k2)
-#     d1_all.append(d1)
-#     d2_all.append(d2)
-
-# # # # # --------------- sudden change in params and in ref, change ref is no good ?-------------------
-# sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
-# for i in range(changing[0]):
-#     y = sampling.measure(ref=sinwave)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     m1_all.append(m1)
-#     m2_all.append(m2)
-#     k1_all.append(k1)
-#     k2_all.append(k2)
-#     d1_all.append(d1)
-#     d2_all.append(d2)
-#
-#
-# m1 = m1 * 0.9
-# m2 = m2 * 0.9
-# k1 = k1 * 0.9
-# k2 = k2 * 0.9
-# d1 = d1 * 0.9
-# d2 = d2 * 0.9
-# for i in range(changing[0], changing[1]):
-#     y = sampling.measure(ref=sinwave, noise_process=10 ** -5, noise_measure=10 ** -5)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     m1_all.append(m1)
-#     m2_all.append(m2)
-#     k1_all.append(k1)
-#     k2_all.append(k2)
-#     d1_all.append(d1)
-#     d2_all.append(d2)
-#
-# for i in range(changing[1], N):
-#     y = sampling.measure(ref=triangle, noise_process=0, noise_measure=0)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     m1_all.append(m1)
-#     m2_all.append(m2)
-#     k1_all.append(k1)
-#     k2_all.append(k2)
-#     d1_all.append(d1)
-#     d2_all.append(d2)
-
-# --------------------------------------
-# # # --- continuously degenerating ----
-# #
-# sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
-# for i in range(changing[0]):
-#     y = sampling.measure(ref=sinwave)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#
-#
-# for i in range(changing[0], N):
-#     if i % 50 == 0:
-#         m1 = m1 - 0.01 * i * dt
-#         m2 = m2 - 0.01 * i * dt
-#         d1 = d1 - 0.0001 * i * dt
-#         d2 = d2 - 0.0001 * i * dt
-#         k1 = k1 - 0.0001 * i * dt
-#         k2 = k2 - 0.0001 * i * dt
-#     y = sampling.measure(ref=sinwave, noise_process=0, noise_measure=0)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     m1_all.append(m1)
-#     m2_all.append(m2)
-#     k1_all.append(k1)
-#     k2_all.append(k2)
-#     d1_all.append(d1)
-#     d2_all.append(d2)
-
-# ----------------------------
 # ------------------ prepare data type ---------
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
@@ -331,7 +210,7 @@ initial_filename = f"{system}_initial"
 model = MechanicalSystem(dt=dt)  #
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
-# model.eval()
+model.eval()
 
 optimizer = torch.optim.Adam([
     {'params': model.parameters(), 'lr': lr},
@@ -339,8 +218,6 @@ optimizer = torch.optim.Adam([
 ], lr=lr * 10)
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
-
-
 
 
 threshold1 = 1#0.97  # start retrain, R2
@@ -353,20 +230,11 @@ factor.Thehat_old = np.random.rand(6, 1) * 0.1
 # print('seed=', np.random.get_state()[1][0])#
 factor.Xhat_old = np.array([[2], [0]])
 
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=1,threshold1=threshold1, threshold2=threshold2) #optimizer=optimizer,
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=5, threshold1=threshold1, threshold2=threshold2)
-
-
-# x_fit = np.zeros((1, n_x), dtype=np.float32)
-# x_fit[0, 0] = np.copy(Y_sys[0, 0])
-# x_fit[0, 1] = 0
-# x_step = x0
-# x0 = torch.tensor(x_fit[[0], :], dtype=torch.float32)
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=1,threshold1=threshold1, threshold2=threshold2) 
 
 x0 = x_fit[[0], :].detach()
 
-u = torch.tensor(U[:, None, :])  # [:, None, :]
+u = torch.tensor(U[:, None, :])
 y = Y_sys[:, np.newaxis]
 
 
@@ -377,7 +245,6 @@ with torch.no_grad():
     xhat0 = xhat0.detach().numpy()
     xhat0 = xhat0.squeeze(1)
     yhat0 = xhat0[:, 0]
-    # yhat0=yhat0[:, None]
 print(f"\n NN  time: {time.time() - start_time:.2f}")
 
 
@@ -393,16 +260,6 @@ correction = simulator.correction
 print(f'update at {correction}')
 print(f'stop at {stop}')
 
-# # ->>>---- update == False, optimization outside NN loop, soo faster than stepwise --
-# yhat_stable = xhat_data[:, 0]
-# factor.forward(y, yhat_stable)
-# yhat = factor.Yhat_data
-# Thehat = factor.Thehat_data
-# ------ <<<--------------------------------------
-
-# np.savetxt('yhat0_two_spring.txt', yhat)
-
-# yhat0 = np.loadtxt('yhat0_two_spring.txt')
 print("nn R^2 = ", R2(Y_sys, yhat0))
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
 fig, ax = plt.subplots(3, 1, sharex=True)
@@ -413,73 +270,11 @@ ax[0].set_ylabel("(a)")
 ax[0].legend(loc=4)
 ax[1].plot(time_exp, Y_sys, 'g', label='y')
 ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-# ax[0].plot(time_exp, simulator.y_pem, 'y--')
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[1].set_ylabel("(b)")
 ax[1].legend(loc=4)
 ax[2].plot(time_exp, U, 'k', label='u')
-# ax[2].plot(time_exp[changing], U[changing], 'kx', label='changing')
 ax[2].set_ylabel("(c)")
 ax[2].set_xlabel('time(s)')
 ax[2].legend(loc=4)
 
-#
-# # #
-# fig, ax = plt.subplots(6, 1, sharex=True)
-# ax[0].plot(time_exp, Thehat[:, 0], 'g', label='a0')
-# ax[0].plot(time_exp[changing], Thehat[changing, 0], 'kx')
-# # ax[0].plot(time_exp[correction], Thehat[correction, 0], 'yx')
-# # ax[0].plot(time_exp[stop], Thehat[stop, 0], 'mx')
-# ax[0].legend()
-# ax[1].plot(time_exp, Thehat[:, 1], 'g', label='a1')
-# # ax[1].plot(time_exp[changing], Thehat[changing, 1], 'kx')
-# ax[1].legend()
-# ax[2].plot(time_exp, Thehat[:, 2], 'b', label='b0')
-# # ax[2].plot(time_exp[changing], Thehat[changing, 2], 'kx')
-# ax[2].legend()
-# ax[3].plot(time_exp, Thehat[:, 3], 'b', label='b1')
-# # ax[3].plot(time_exp[changing], Thehat[changing, 3], 'kx')
-# ax[3].legend()
-# ax[4].plot(time_exp, Thehat[:, 4], 'k', label='k0')
-# # ax[4].plot(time_exp[changing], Thehat[changing, 4], 'kx')
-# ax[4].legend()
-# ax[5].plot(time_exp, Thehat[:, 5], 'k', label='k1')
-# # ax[5].plot(time_exp[changing], Thehat[changing, 5], 'kx')
-#
-# ax[5].set_xlabel('Time(s)')
-# ax[5].legend()
-# # ----------- degenerating physical parameters --------
-# fig, ax = plt.subplots(6, 1, sharex=True)
-# ax[0].plot(m1_all, 'k', label='m1')
-# ax[0].legend()
-# ax[1].plot(m2_all, 'k', label='m2')
-# ax[1].legend()
-# ax[2].plot(k1_all, 'k', label='k1')
-# ax[2].legend()
-# ax[3].plot(k2_all, 'k', label='k2')
-# ax[3].legend()
-# ax[4].plot(d1_all, 'k', label='d1')
-# ax[4].legend()
-# ax[5].plot(d2_all, 'k', label='d2')
-# ax[5].legend()
-# plt.figure()
-# plt.plot(time_exp, simulator.y_pem, label='y_{pem}')
-# # plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
-# # plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
-# plt.xlabel('Time')
-
-# simulator.y_pem = np.array(simulator.y_pem)
-# simulator.y_pem0 = np.array(simulator.y_pem0)
-# ts = 0.05
-# plt.figure()
-# plt.plot(time_exp, simulator.y_pem, 'r', label='$\hat{y}_{pem}$')
-# plt.plot(time_exp, simulator.y_pem0, 'g', label='$\hat{y}_{pem0}$')
-# plt.plot(simulator.y_pem[:, 1]*ts, simulator.y_pem[:, 0], 'r', label='$\hat{y}_{pem}$')  #
-# plt.plot(simulator.y_pem0[:, 1]*ts, simulator.y_pem0[:, 0], 'g', label='PEM resting')
-# plt.plot(simulator.y_pem[:, 0], 'r-', label='$\hat{y}_{pem}$')
-# plt.plot(simulator.y_pem0[:, 0], 'g-', label='$\hat{y}_{pem}0$')
-# plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
-# plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
-# plt.xlabel('Time(s)')
-# plt.legend()
-# plt.show()
