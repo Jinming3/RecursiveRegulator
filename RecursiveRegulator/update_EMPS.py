@@ -1,6 +1,3 @@
-""""
-
-"""
 import matplotlib
 import pandas as pd
 import numpy as np
@@ -43,7 +40,6 @@ def sinwave(dt, time_all, w=0.5):
     A = 1
     for k in range(int(time_all / dt)):
         x = A * np.cos(w * k * math.pi * dt)
-        # x = A * np.sin(w*k * math.pi* dt)
         out.append(x)
     return out
 
@@ -54,7 +50,6 @@ def triangle(dt, time_all):
     p = 2
     for k in range(int(time_all / dt)):
         x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
-
         out.append(x)
     return out
 
@@ -97,12 +92,6 @@ dt = 0.005
 time_all = np.array([70])
 changing = np.array([20, 50]) / dt
 
-# dt = 0.05
-# time_all = np.array([100])  #
-# change1 = int(time_all/10*3)
-# change2 = int(time_all/10*6)
-# changing = np.array([change1, change2])/dt
-
 
 N = int(time_all[-1] / dt)
 time_exp = np.arange(N) * dt
@@ -113,82 +102,12 @@ Fc_all = []
 Fv_all = []
 ref_signal = []
 
-
 changing = changing.astype(int)
-
-
 
 p_ref = sinwave(dt, time_all)  # ref signal not change
 sig = 'sinwave'
 p_tri = triangle(dt, time_all)
 
-# --- changing -------------------
-# # # # ---- start original system with no change---
-# sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
-# for i in range(changing[0]):
-#     y = sampling.measure(p_ref[i])
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     M_all.append(M)
-#     Fv_all.append(Fv)
-#     Fc_all.append(Fc)
-
-# -----------------------------------------
-# # #  --- system changing ---
-# M = M * 0.7
-# Fv = Fv * 0.7
-# Fc = Fc * 0.8
-# for i in range(changing[0], changing[1]):
-#     y = sampling.measure(p_ref[i], noise_process=10 ** -3, noise_measure=10 ** -4)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     M_all.append(M)
-#     Fv_all.append(Fv)
-#     Fc_all.append(Fc)
-#
-# offset = offset * 0.7
-# M = M * 0.5
-# Fv = Fv * 0.6
-# Fc = Fc * 0.75
-# for i in range(changing[1], changing[2]):
-#     y = sampling.measure(p_ref[i], noise_process=10 ** -2, noise_measure=10 ** -4)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     M_all.append(M)
-#     Fv_all.append(Fv)
-#     Fc_all.append(Fc)
-#
-# M = M * 0.97
-# Fv = Fv * 0.9
-# Fc = Fc * 0.9
-# for i in range(changing[2], N):
-#     y = sampling.measure(p_ref[i], noise_process=10 ** -3, noise_measure=10 ** -4)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     M_all.append(M)
-#     Fv_all.append(Fv)
-#     Fc_all.append(Fc)
-# -----------------------------------
-# # # --------------- only one sudden change -------------------
-# sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
-# for i in range(changing[0]):
-#     y = sampling.measure(p_ref[i], noise_process=10 ** -4, noise_measure=10 ** -4)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     M_all.append(M)
-#     Fv_all.append(Fv)
-#     Fc_all.append(Fc)
-# offset = offset * 0.99
-# M = M * 0.9
-# Fv = Fv * 0.9
-# Fc = Fc * 0.9
-# for i in range(changing[0], N):
-#     y = sampling.measure(p_ref[i], noise_process=10 ** -4, noise_measure=10 ** -4)
-#     Y_sys.append(y)
-#     U.append(sampling.u)
-#     M_all.append(M)
-#     Fv_all.append(Fv)
-#     Fc_all.append(Fc)
 
 # # # # --------------- sudden change in params and in ref -------------------
 sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
@@ -264,7 +183,7 @@ initial_filename = f"{system}_initial"
 model = MechanicalSystem(dt=dt)  #
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
-# model.eval()
+model.eval()
 x0 = x_fit[[0], :].detach()
 
 optimizer = torch.optim.Adam([
@@ -293,20 +212,12 @@ factor.P_old2 *= 0.09
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
 factor.Thehat_old = np.random.rand(6, 1) * 0.01
-# print('seed=', np.random.get_state()[1][0])#
 factor.Xhat_old = np.array([[2], [0]])
 # update = 5 # original update
 update = 9 # add pem fix
 
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, update=update,
-                            threshold1=threshold1, threshold2=threshold2)  # optimizer=optimizer,
-
-# x_fit = np.zeros((1, n_x), dtype=np.float32)
-# x_fit[0, 0] = np.copy(Y_sys[0, 0])
-# x_fit[0, 1] = 0
-# x_step = x0
-# x0 = torch.tensor(x_fit[[0], :], dtype=torch.float32)
-
+                            threshold1=threshold1, threshold2=threshold2)  
 
 start_time = time.time()
 xhat_data = simulator(x0, u, y)
@@ -319,11 +230,6 @@ correction = simulator.correction
 print(f'update at {correction}')
 print(f'stop at {stop}')
 
-# # ->>>---- update == False, optimization outside NN loop, soo faster than stepwise --
-# yhat_stable = xhat_data[:, 0]
-# factor.forward(y, yhat_stable)
-# yhat = factor.Yhat_data
-# Thehat = factor.Thehat_data
 # ------ <<<--------------------------------------
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
 print('nn r2=', R2(Y_sys, yhat0))
@@ -339,7 +245,6 @@ ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[1].set_ylabel("(b)")
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))
 ax[2].plot(time_exp, U, 'k', label='u')
-# ax[1].plot(time_exp[changing], U[changing], 'kx', label='changing')
 ax[2].set_ylabel("(c)")
 ax[2].legend()
 ax[3].plot(time_exp, ref_signal, 'k', label='ref')  #
