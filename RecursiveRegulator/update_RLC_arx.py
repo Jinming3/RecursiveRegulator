@@ -1,6 +1,3 @@
-""""
-
-"""
 import matplotlib
 matplotlib.use('TKAgg')
 import pandas as pd
@@ -31,12 +28,7 @@ params = {
           }
 pylab.rcParams.update(params)
 
-# df_data = pd.read_csv("F:/Project/DATA/RLC/RLC_data_test.csv")
-# Y_sys = np.array(df_data[['V_C']]).astype(np.float32)
-# time_exp = np.array(df_data['time']).astype(np.float32)
-# dt = time_exp[1] - time_exp[0]
-# U = np.array(df_data[['V_IN']]).astype(np.float32)
-# X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
+
 system = 'RLC_aging'
 np.random.seed(7)
 torch.manual_seed(0)
@@ -75,7 +67,6 @@ class rlc:
 
 
 ts=0.5*10**(-6)
-
 
 
 # # ------
@@ -152,10 +143,6 @@ for i in range(changing[2], N):
     Y_sys.append(Y)
     U.append(circuit.u)
 
-# -----------------------
-
-
-
 
 Y_sys = np.reshape(Y_sys, (-1, 1)).astype(np.float32)
 U = np.reshape(U, (-1, 1)).astype(np.float32)
@@ -182,14 +169,10 @@ optimizer = torch.optim.Adam([
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
 
-
-
-
 x0 = x_fit[[0], :].detach()
 
 u = torch.tensor(U)  # [:, None, :]  , :
 y = Y_sys[:, np.newaxis]
-
 
 simulator0 = ForwardEuler(model=model, dt=1.0)
 start_time = time.time()
@@ -198,10 +181,7 @@ with torch.no_grad():
     xhat0 = xhat0.detach().numpy()
     xhat0 = xhat0.squeeze(1)
     yhat0 = xhat0[:, 0]
-    # yhat0=yhat0[:, None]
 print(f"\n NN  time: {time.time() - start_time:.2f}")
-
-
 
 
 threshold1 = 1#0.96  # start retrain, R2
@@ -216,8 +196,8 @@ factor.Xhat_old = np.array([[2], [0]])
 
 update = 8 #1 # stop at self.train, pem in s_step
 train_time = int(1.5 * 10**(-3) / ts)  # N
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train=train_time) #optimizer=optimizer,
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train=train_time) 
+
 # -----arx
 p = 2
 yhat1 = []
@@ -232,7 +212,6 @@ for i in range(2, N):
         LinearParams = sm.OLS(endog, sm.add_constant(exog))
         results = LinearParams.fit()
     pred = results.predict(sm.add_constant(exog))
-
     yhat1.append(pred)
     y_lag_1 = pred
     y_lag_2 = y_lag_1
@@ -258,29 +237,9 @@ print("inference evolution R^2 = ", R2(Y_sys[:, 0], yhat))
 
 time_exp = np.arange(N) * ts *10**(6)
 
-# fig, ax = plt.subplots(3, 1, sharex=True)
-# ax[0].plot(time_exp, Y_sys, 'g', label='y')
-# ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
-# ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
-# ax[0].set_ylabel("(a)")
-# ax[0].legend()
-# ax[0].legend(bbox_to_anchor=(0.9, 0.55))
-# ax[1].plot(time_exp, Y_sys, 'g', label='y')
-# ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-# ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
-# ax[1].set_ylabel("(b)")
-# ax[1].legend()
-# ax[1].legend(bbox_to_anchor=(0.9, 0.6))
-# ax[2].plot(time_exp, U[:, 0, 0], 'k', label='u')
-# ax[2].set_ylabel("(c)")
-# ax[2].set_xlabel('time($\mu s$)')
-# ax[2].legend()
-# ax[2].legend(loc=4)
-
 
 fig, ax = plt.subplots(2, 1, sharex=True)
 ax[0].plot(time_exp, Y_sys, 'g', label='y')
-# ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{NN}$')
 ax[0].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
 ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[0].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
@@ -289,7 +248,6 @@ ax[0].set_ylabel("(a)")
 
 
 ax[1].plot(time_exp[p:N], Y_sys[p:N], 'g', label='y')
-# ax[1].plot(time_exp[p:N], yhat1, 'r--', label='$\hat{y}_{Ham}$')
 ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
 
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
@@ -297,13 +255,7 @@ ax[1].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
 ax[1].set_ylabel("(b)")
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))  #
 ax[1].set_xlabel('time($\mu s$)')
-# ax[2].plot(time_exp, Y_sys, 'g', label='y')
-# ax[2].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-# ax[2].plot(time_exp[changing], Y_sys[changing], 'kx')
-# ax[2].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
-# ax[2].set_ylabel("(c)")
-# ax[2].legend(bbox_to_anchor=(1.11, 0.8))  #
-# ax[2].set_xlabel('time($\mu s$)')
+
 
 
 
