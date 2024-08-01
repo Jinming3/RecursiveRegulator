@@ -11,7 +11,7 @@ import math
 import time
 sys.path.append(os.path.join("F:/Project/head/"))
 import header
-from pem import PEM  # _step as PEM
+from pem import PEM  
 from pem import normalize, R2
 from header import MechanicalSystem, ForwardEulerPEM, ForwardEuler
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
