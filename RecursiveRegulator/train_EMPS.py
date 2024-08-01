@@ -77,19 +77,7 @@ U = []
 
 p_ref = sinwave(dt, time_all)
 sig = 'sinwave'
-# ------------------- real ref --------------
-# df = pd.read_csv("/home/jsun/SUN/Project/DATA/EMPS/control_EMPS.csv")
-# time_exp = np.array(df['t']).astype(np.float32)
-# p_ref0 = np.array(df['p_ref']).astype(np.float32)
-# p_ref1 = np.array(df['p_ref1']).astype(np.float32)
-# pulse = np.array(df['pulse'])
-# p_ref = []
-# dt = 0.005
-# for k in range(0, len(time_exp)):
-#     if k % 5 == 0:
-#         p_ref.append(p_ref0[k])
 
-# ----------------------------------------------------
 simu = 'train'
 # simu = 'noise'
 noise = 0
@@ -140,7 +128,6 @@ X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
 model = MechanicalSystem(dt=dt)
-# simulator = header.RK4(model=model, dt=dt)
 simulator = ForwardEuler(model=model, dt=dt)
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
