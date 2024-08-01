@@ -1,6 +1,3 @@
-""""
-
-"""
 import pandas as pd
 import numpy as np
 import torch
@@ -28,12 +25,6 @@ params = {
 }
 pylab.rcParams.update(params)
 
-# df_data = pd.read_csv("F:/Project/DATA/RLC/RLC_data_id.csv")
-# Y_sys = np.array(df_data[['V_C']]).astype(np.float32)
-# time_exp = np.array(df_data['time']).astype(np.float32)
-# dt = time_exp[1] - time_exp[0]
-# U = np.array(df_data[['V_IN']]).astype(np.float32)
-# X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
 
 # np.random.seed(3)
 # torch.manual_seed(3407)
@@ -52,27 +43,18 @@ def white(bandwidth, time_all, std_devi, dt): # Sample rate in Hz # Duration of 
     return sampled_noise
 
 
-def sinwave(dt, i, w, A): #=0.1,=1.0
-    # out = []
-
-    # for k in range(int(time / dt)):
+def sinwave(dt, i, w, A): 
+   
     x = A * np.cos(w * i * math.pi * dt)
-    # x = A * np.sin(w*k * math.pi* dt)
-    # out.append(x)
     return x
 
 
 # -- tri wave ---
-def triangle(dt, i, A=2):  # , time_all
-    out = []
+def triangle(dt, i, A=2):
     p = 8
-    # for k in range(int(time_all / dt)):
-    #     x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
     x = A* np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
-    # out.append(x)
     return x
 
-# ----
 class rlc:
     def __init__(self, vc, il, dvc, dil,  dt):
         self.vc = vc  # capacitor voltage (V)
@@ -95,9 +77,7 @@ class rlc:
 
 time_all = 2 *10**(-3)  # 2ms
 dt=0.5*10**(-6)
-
 L0=50*10**(-6)
-
 C = 270 * 10 ** (-9)  #capacitor
 R=3 #resistor 5 #
 bandwidth= 300e2 #150e2 #150e3
@@ -113,15 +93,12 @@ U = []
 X = []
 
 for i in range(int(time_all/dt)):
-    Y = circuit.get_y(v_in[i], noise_measure=0, noise_process=0) #       1  ,sinwave(dt=dt, i=i, w=bandwidth, A=1)
+    Y = circuit.get_y(v_in[i], noise_measure=0, noise_process=0) #       
     Y_sys.append(Y)
     U.append(circuit.u)
     X.append([circuit.vc, circuit.il])
 
-
-
-
-dt = torch.tensor(dt, dtype=torch.float32)  #
+dt = torch.tensor(dt, dtype=torch.float32)  
 Y_sys = np.reshape(Y_sys, (-1, 1)).astype(np.float32)
 U = np.reshape(U, (-1, 1)).astype(np.float32)
 X = np.array(X).astype(np.float32)
@@ -138,19 +115,14 @@ error_scale = 0.01#10 #
 num_epoch = 10000
 batch_num = 64
 batch_length = 64
-# batch_length = 128
-# batch_length = 128
 weight = 1.0  # initial state weight in loss function
 lr = 0.001
-# lr = 0.001
 n_x = 2
 
 
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 model = NeuralStateSpaceModel()
-# model = MechanicalSystem(dt=dt)
-# simulator = header.RK4(model=model, dt=dt)
-simulator = ForwardEuler(model=model, dt=1.0)  #, dt=dt # not acceleration, no dt
+simulator = ForwardEuler(model=model, dt=1.0)  
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
 optimizer = torch.optim.Adam([
@@ -184,7 +156,7 @@ LOSS = []
 start_time = time.time()
 for epoch in range(num_epoch):
     batch_x0, batch_x, batch_u, batch_y = get_batch()
-    # batch_xhat = traced_simulator(batch_x0, batch_u)
+   
     batch_xhat = simulator(batch_x0, batch_u)
     # output loss
     batch_yhat = batch_xhat[:, :, [0]]
@@ -212,11 +184,11 @@ if not os.path.exists("models"):
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
 
-# torch.save({'model_state_dict': simulator.model.state_dict(),
-#             'optimizer_state_dict': optimizer.state_dict()},
-#            os.path.join("models", model_filename))
-#
-# torch.save(x_fit, os.path.join("models", initial_filename))
+torch.save({'model_state_dict': simulator.model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict()},
+           os.path.join("models", model_filename))
+
+torch.save(x_fit, os.path.join("models", initial_filename))
 
 # fig, ax = plt.subplots(1, 1)
 # ax.plot(LOSS, label='loss_total')
@@ -231,8 +203,7 @@ x0_vali = torch.tensor(x0_vali)
 u_vali = torch.tensor(U)
 with torch.no_grad():
     xhat_vali = simulator(x0_vali[None, :], u_vali[:, None])
-    # xhat_vali = simulator(x0_vali, u_vali)
-
+    
     xhat_vali = xhat_vali.detach().numpy()
     xhat_vali = xhat_vali.squeeze(1)
     yhat_vali = xhat_vali[:, 0]
