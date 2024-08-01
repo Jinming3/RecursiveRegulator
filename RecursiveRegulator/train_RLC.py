@@ -11,7 +11,7 @@ import sys
 import math
 from scipy import signal
 sys.path.append(os.path.join("F:/Project/head/"))
-from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel  # MechanicalSystem,
+from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel  
 import matplotlib.pylab as pylab
 
 params = {
