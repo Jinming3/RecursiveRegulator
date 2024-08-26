@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 import torch
@@ -10,8 +11,9 @@ import os
 import sys
 import math
 from scipy import signal
+
 sys.path.append(os.path.join("F:/Project/head/"))
-from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel  
+from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel_i
 import matplotlib.pylab as pylab
 
 params = {
@@ -25,66 +27,68 @@ params = {
 }
 pylab.rcParams.update(params)
 
-
-# np.random.seed(3)
-# torch.manual_seed(3407)
 np.random.seed(0)
 torch.manual_seed(0)
+
+
 def inductance(il, L0):
     out = L0 * (0.9 * (1 / math.pi * np.arctan(-5 * (np.abs(il) - 5)) + 0.5) + 0.1)
     return out
 
-def white(bandwidth, time_all, std_devi, dt): # Sample rate in Hz # Duration of the white noise in seconds
-    fs_noise = 2*bandwidth # Noise generation sampling frequency, should be at least twice the bandwidth
-    t_noise = np.arange(0, time_all, 1/fs_noise)
-    noise = std_devi*np.random.randn(len(t_noise))
-    num_samples = int(time_all/dt)
+
+def white(bandwidth, time_all, std_devi, dt):  # Sample rate in Hz # Duration of the white noise in seconds
+    fs_noise = 2 * bandwidth  # Noise generation sampling frequency, should be at least twice the bandwidth
+    t_noise = np.arange(0, time_all, 1 / fs_noise)
+    noise = std_devi * np.random.randn(len(t_noise))
+    num_samples = int(time_all / dt)
     sampled_noise = signal.resample(noise, num_samples)
     return sampled_noise
 
 
-def sinwave(dt, i, w, A): 
-   
+def sinwave(dt, i, w, A):
     x = A * np.cos(w * i * math.pi * dt)
     return x
 
 
 # -- tri wave ---
-def triangle(dt, i, A=2):
+def triangle(dt, i, A=2):  # , time_all
     p = 8
-    x = A* np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
+    x = A * np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
     return x
 
+
+# ----
 class rlc:
-    def __init__(self, vc, il, dvc, dil,  dt):
+    def __init__(self, vc, il, dvc, dil, dt):
         self.vc = vc  # capacitor voltage (V)
         self.il = il  # inductor current (A)
         self.dvc = dvc  # derivative
         self.dil = dil  # derivative
         self.dt = dt
 
-
     def get_y(self, u, noise_process=0, noise_measure=0):
         self.u = u
         self.L = inductance(self.il, L0)
-        self.dvc = self.il /C
-        self.dil= -1/self.L * self.vc -R/self.L*self.il + 1/self.L * u + np.random.randn() * noise_process
+        self.dvc = self.il / C
+        self.dil = -1 / self.L * self.vc - R / self.L * self.il + 1 / self.L * u + np.random.randn() * noise_process
         self.vc = self.vc + self.dvc * self.dt + np.random.normal(0, 10) * noise_measure
         self.il = self.il + self.dil * self.dt + np.random.normal(0, 1) * noise_measure
 
         output = self.vc
         return output
 
-time_all = 2 *10**(-3)  # 2ms
-dt=0.5*10**(-6)
-L0=50*10**(-6)
+
+time_all = 2 * 10 ** (-3)  # 2ms
+dt = 0.5 * 10 ** (-6)
+L0 = 50 * 10 ** (-6)
+
 C = 270 * 10 ** (-9)  #capacitor
-R=3 #resistor 5 #
-bandwidth= 300e2 #150e2 #150e3
+R = 3
+bandwidth = 300e2
 std_devi = 80
 
 # -------
-system = 'RLC_aging'
+system = 'RLC_aging_i'
 circuit = rlc(vc=0, il=0, dvc=0, dil=0, dt=dt)
 
 v_in = white(bandwidth, time_all, std_devi, dt)
@@ -92,37 +96,35 @@ Y_sys = []
 U = []
 X = []
 
-for i in range(int(time_all/dt)):
-    Y = circuit.get_y(v_in[i], noise_measure=0, noise_process=0) #       
+for i in range(int(time_all / dt)):
+    Y = circuit.get_y(v_in[i], noise_measure=0, noise_process=0)
     Y_sys.append(Y)
     U.append(circuit.u)
     X.append([circuit.vc, circuit.il])
 
-dt = torch.tensor(dt, dtype=torch.float32)  
+dt = torch.tensor(dt, dtype=torch.float32)  #
 Y_sys = np.reshape(Y_sys, (-1, 1)).astype(np.float32)
 U = np.reshape(U, (-1, 1)).astype(np.float32)
 X = np.array(X).astype(np.float32)
 N = len(Y_sys)
 
-
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
 X = normalize(X, 1)
 
-# -----------------------------------------------------------------------
-error_scale = 0.01#10 #
-
+error_scale = 0.01
 num_epoch = 10000
 batch_num = 64
 batch_length = 64
+# batch_length = 128
+# batch_length = 128
 weight = 1.0  # initial state weight in loss function
 lr = 0.001
 n_x = 2
 
-
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
-model = NeuralStateSpaceModel()
-simulator = ForwardEuler(model=model, dt=1.0)  
+model = NeuralStateSpaceModel_i()
+simulator = ForwardEuler(model=model, dt=1.0)
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
 optimizer = torch.optim.Adam([
@@ -141,22 +143,19 @@ def get_batch(batch_num=batch_num, batch_length=batch_length):
     batch_y = torch.tensor(Y_sys[batch_index])
     return batch_x0, batch_x, batch_u, batch_y
 
-
-# compute initial error as scale.
 with torch.no_grad():
     batch_x0, batch_x, batch_u, batch_y = get_batch()
     batch_xhat = simulator(batch_x0, batch_u)
     # traced_simulator = torch.jit.trace(simulator, (batch_x0, batch_u))
     batch_yhat = batch_xhat[:, :, [0]]
     error_init = batch_yhat - batch_y
-    # error_scale = torch.sqrt(torch.mean(error_init ** 2, dim=(0, 1)))  # root MSE
 
 LOSS = []
 
 start_time = time.time()
 for epoch in range(num_epoch):
     batch_x0, batch_x, batch_u, batch_y = get_batch()
-   
+    # batch_xhat = traced_simulator(batch_x0, batch_u)
     batch_xhat = simulator(batch_x0, batch_u)
     # output loss
     batch_yhat = batch_xhat[:, :, [0]]
@@ -190,11 +189,6 @@ torch.save({'model_state_dict': simulator.model.state_dict(),
 
 torch.save(x_fit, os.path.join("models", initial_filename))
 
-# fig, ax = plt.subplots(1, 1)
-# ax.plot(LOSS, label='loss_total')
-# ax.grid(True)
-# ax.set_xlabel("Iteration")
-# plt.legend()
 
 # initial state estimate
 x0_vali = x_fit[0, :].detach().numpy()
@@ -203,7 +197,6 @@ x0_vali = torch.tensor(x0_vali)
 u_vali = torch.tensor(U)
 with torch.no_grad():
     xhat_vali = simulator(x0_vali[None, :], u_vali[:, None])
-    
     xhat_vali = xhat_vali.detach().numpy()
     xhat_vali = xhat_vali.squeeze(1)
     yhat_vali = xhat_vali[:, 0]
