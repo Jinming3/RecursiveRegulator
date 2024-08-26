@@ -10,7 +10,7 @@ import os
 import sys
 import math
 sys.path.append(os.path.join("F:/Project/head/"))
-from header import R2, normalize, MechanicalSystem, ForwardEuler
+from header import R2, normalize, MechanicalSystem_i, ForwardEuler
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
@@ -62,13 +62,11 @@ satu = 10  # saturation
 # satu = 100  # saturation
 # # -------------------------------------------------
 # # ------- time-invariant system -----
-system = 'update'
+system = 'update_i'
 
 dt = 0.005
 time_all = np.array([10])# 20seconds
 
-# dt=0.3
-# time_all = np.array([1000])
 
 sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
 
@@ -86,7 +84,7 @@ if simu == 'train':
 if simu == 'noise':
     noise = 0.01
 #
-for i in p_ref:  # no noise for training, noise for test
+for i in p_ref:
     p_control = i
     y = sampling.measure(p_control, noise * 10, noise)
     Y_sys.append(y)
@@ -114,7 +112,7 @@ dt = torch.tensor(dt , dtype=torch.float32)  #
 num_epoch = 10000
 batch_num = 64
 batch_length = 32
-weight = 1.0  # initial state weight in loss function
+weight = 1.0
 lr = 0.0001
 # state space
 n_x = 2
@@ -127,7 +125,7 @@ X[:, 0] = np.copy(Y_sys[:, 0])
 X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
-model = MechanicalSystem(dt=dt)
+model = MechanicalSystem_i(dt=dt)
 simulator = ForwardEuler(model=model, dt=dt)
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
@@ -146,7 +144,6 @@ def get_batch(batch_num=batch_num, batch_length=batch_length):
     batch_u = torch.tensor(U[batch_index, :])
     batch_y = torch.tensor(Y_sys[batch_index])
     return batch_x0, batch_x, batch_u, batch_y
-
 
 # compute initial error as scale.
 with torch.no_grad():
@@ -205,8 +202,6 @@ torch.save(x_fit, os.path.join("models", initial_filename))
 
 fig, ax = plt.subplots(1, 1)
 ax.plot(LOSS, label='loss_total')
-# ax.plot(LOSS_output, label='loss_fit_y')
-# ax.plot(LOSS_initial, label='loss_initial_state')
 ax.grid(True)
 ax.set_xlabel("Iteration")
 plt.legend()
@@ -233,5 +228,5 @@ ax[0].legend()
 ax[1].plot(U, 'k', label='u')
 ax[1].set_xlabel('Time')
 ax[1].legend()
-# plt.show()
+
 
