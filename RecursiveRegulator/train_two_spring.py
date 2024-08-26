@@ -1,3 +1,4 @@
+
 import pandas as pd
 import numpy as np
 import torch
@@ -12,8 +13,9 @@ import math
 from numpy.linalg import inv
 
 sys.path.append(os.path.join("F:/Project/head/"))
-from header import R2, normalize, MechanicalSystem, ForwardEuler
-
+from header import R2, normalize
+from header import MechanicalSystem_i
+from header import ForwardEuler_i
 # -------------
 # define the system parameters
 m1 = 20
@@ -22,13 +24,15 @@ k1 = 1000
 k2 = 2000
 d1 = 1
 d2 = 5
-Fc = 0.05 # 20.3935
+Fc = 0.05
 
-def sinwave(dt, i, w=0.5): 
-    A = 2
+def sinwave(dt, i, w=0.5): # 0.1
+
+    A = 4
     x = A * np.cos(w * i * math.pi * dt)
-    
+    # x = A * np.sin(w*i * math.pi* dt)
     return x
+
 
 
 
@@ -44,11 +48,11 @@ class Motion:
 
     def get_y(self,  noise_process=0.0, noise_measure=0.0):
         self.u = sinwave(self.dt, i)
-       
+        # self.u = 5.0
         self.acc1 = -(k1 + k2 / m1) * self.pos1 - (d1 + d2) / m1 * self.vel1 + k2 / m1 * self.pos2 + d2 / m1 * self.vel2 - Fc / m1 * np.sign(
             self.vel1)
         self.acc2 = k2 / m2 * self.pos1 + d2 / m2 * self.vel1 - k2 / m2 * self.pos2 - d2 / m2 * self.vel2 + 1 / m2 * self.u - Fc / m2 * np.sign(
-            self.vel2) + 0 * np.random.randn() * noise_process
+            self.vel2) + np.random.randn() * noise_process
         self.vel1 = self.vel1 + self.acc1 * self.dt
         self.vel2 = self.vel2 + self.acc2 * self.dt
         self.pos1 = self.pos1 + self.vel1 * self.dt
@@ -89,10 +93,10 @@ def vel(pos):
 v_est = vel(Y_sys)
 dt = torch.tensor(dt, dtype=torch.float32)  #
 # # -----------------------------------------------------------------------
-system = 'two_spring_motion5'
+system = 'two_spring_motion5_8'
 num_epoch = 10000
 batch_num = 64
-batch_length = 32
+batch_length = 64#32
 weight = 1.0  # initial state weight in loss function
 lr = 0.0001
 # state space
@@ -105,9 +109,9 @@ X[:, 0] = np.copy(Y_sys[:, 0])
 X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
-model = MechanicalSystem(dt=dt)
+model = MechanicalSystem_i(dt=dt)
 
-simulator = ForwardEuler(model=model, dt=dt)
+simulator = ForwardEuler_i(model=model, dt=dt)
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
 optimizer = torch.optim.Adam([
@@ -173,11 +177,6 @@ torch.save({'model_state_dict': simulator.model.state_dict(),
 
 torch.save(x_fit, os.path.join("models", initial_filename))
 
-# fig, ax = plt.subplots(1, 1)
-# ax.plot(LOSS, label='loss_total')
-# ax.grid(True)
-# ax.set_xlabel("Iteration")
-# plt.legend()
 
 # initial state estimate
 x0_vali = x_fit[0, :].detach().numpy()
@@ -190,7 +189,7 @@ with torch.no_grad():
     xhat_vali = xhat_vali.squeeze(1)
     yhat_vali = xhat_vali[:, 0]
 
-print("R^2 = ", R2(Y_sys[:, 0], yhat_vali))  # .detach().numpy()
+print("R^2 = ", R2(Y_sys[:, 0], yhat_vali))
 
 fig, ax = plt.subplots(2, 1, sharex=True)
 ax[0].plot(Y_sys, 'g', label='y')
