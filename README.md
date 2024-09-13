@@ -14,7 +14,7 @@ scipy
 
 statsmodels
 
-Three system examples: 
+\textbf{System examples:}
 
 in "RecursiveRegulator", 'update_{system}.py' contains varying system data and recursive regulator to adapt trained model, e.g., update_RLC.py. 
 
