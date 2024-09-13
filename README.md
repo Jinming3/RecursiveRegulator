@@ -3,6 +3,7 @@ The identification methods "Recursive Regulator" focuses on nonlinear systems an
 Language: Python 3.10
 
 File structure: 
-system examples in "RecursiveRegulator", update_system.py contains varying system data and recursive regulator adapting trained model, e.g., update_RLC.py. train_system.py is to train NN model in static system.
+system examples in "RecursiveRegulator", "update_system.py" contains varying system data and recursive regulator adapting trained model, e.g., update_RLC.py. 
+"train_system.py" is to train nonlinear model for static systems.
 
-The package path may be obsolute in some of the files, e.g., "F:/Project/head...". Please download the folder "head" and change the path.
+If the package path had problem, please download the folder "head" and and change the path to obsolute, e.g., "F:/head...". 
