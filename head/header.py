@@ -1,4 +1,6 @@
-
+"""
+recursive regulator callable package
+"""
 import copy
 import matplotlib.pyplot as plt
 import numpy as np
@@ -58,9 +60,6 @@ class NeuralStateSpaceModel_i(nn.Module):
 
         self.inv_phi = nn.Linear(self.n_feat, n_x)
 
-        self.q_bar = torch.zeros(self.n_feat)  # at training it's only 0, requires_grad=False
-        self.q_bar_age_true = 0
-        self.G = torch.zeros((2, 2))
 
 
         if init_small:
@@ -76,8 +75,7 @@ class NeuralStateSpaceModel_i(nn.Module):
     def forward(self, in_x, in_u):
         in_xu = torch.cat((in_x, in_u), -1)  # concatenate x and u over the last dimension to create the [xu] input
         self.out_k = self.phi_k(in_xu)
-        out_q = self.out_k + self.out_k *self.q_bar *self.q_bar_age_true
-        dx = self.inv_phi(out_q)
+        dx = self.inv_phi(self.out_k)
         dx = dx * self.scale_dx
         return dx
 
@@ -94,9 +92,6 @@ class MechanicalSystem_i(nn.Module):
 
         self.inv_phi = nn.Linear(self.hidden, 1)
 
-        self.G = torch.zeros((2, 2))
-
-        self.q_bar = torch.zeros(self.hidden, requires_grad=False)  # at training it's only 0
 
         if init_small:
             for i in self.phi_k.modules():
@@ -112,8 +107,7 @@ class MechanicalSystem_i(nn.Module):
         list_dx: List[torch.Tensor]
         in_xu = torch.cat((x1, u1), -1)
         self.out_k = self.phi_k(in_xu)
-        out_q = self.out_k + self.out_k *self.q_bar
-        out_inv = self.inv_phi(out_q)
+        out_inv = self.inv_phi(self.out_k)
         dv = out_inv / self.dt  # v, dv = net(x, v)
 
         list_dx = [x1[..., [1]], dv]  # [dot x=v, dot v = a]
@@ -135,15 +129,13 @@ class ForwardEuler_i(nn.Module):
             u_step = u_step.squeeze(0)  # size (1, batch_num, 1) -> (batch_num, 1)
             dx = self.model(x_step, u_step)
             x_step = x_step + dx * self.dt
-            x_step = x_step + x_step @ self.model.G
-
             xhat_list += [x_step]
 
         xhat = torch.stack(xhat_list, 0)
         return xhat
 
 
-# ----------------------
+
 class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
 
     def __init__(self, model,
@@ -161,28 +153,18 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
         if train == 0:
             self.train = int(N)
         else:
-            self.train = train  # stop update pem theta
+            self.train = train  # stop update state space model
 
         self.threshold1 = threshold1  # start update
         self.threshold2 = threshold2  # stop update
-        self.sensitivity = sensitivity  # an sequence to monitor R2
+        self.sensitivity = sensitivity  # a sequence to monitor R2
         self.stop = []  # time and r2
         self.correction = [] # time and r2
-        self.pem_out = np.zeros((N, 2))
         self.xhat_data = np.zeros((N, 2))
 
     def forward(self, x0: torch.Tensor, u: torch.Tensor, y):
         x_step = x0
-        self.y_pem = []
-        self.y_pem0 = []
-        self.r2 = np.zeros(self.N)
-        self.alter = torch.zeros(1, 2)
-        self.err = np.zeros(self.N)  # |y-yhat|
-        self.A_data =np.zeros((self.N, 2))
-        self.B_data = np.zeros((self.N, 2))
-        # ---------------
-        self.on = []
-        self.check = []
+        
         # ------------------
         q = 0
 
