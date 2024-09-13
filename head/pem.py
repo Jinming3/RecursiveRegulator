@@ -49,12 +49,9 @@ class PEM(object):  #
         self.N = N  # total data size
         self.m = m  # dimension of output Y
         self.r = r  # dimension of input U
-        self.Thehat_data = np.zeros((self.N, self.t))
         self.Xhat_data = np.zeros((self.N, self.n))  # collect state estimates
         self.Yhat_data = np.zeros(self.N)  # collect prediction
-        self.VN_data = np.zeros(self.N)  # prediction mean squared errors
         self.Xhat = np.zeros((self.n, 1))
-        self.E_data = []  # collect n step ahead prediction error
         self.Ahat = np.eye(self.n, self.n, 1)  # canonical form
         self.Ahat_old = np.eye(self.n, self.n, 1)
         self.Bhat = np.zeros((self.n, self.ur))
@@ -102,7 +99,7 @@ class PEM(object):  #
         for h in range(self.n):
             self.Khat[h, 0] = self.Thehat[self.n + self.n*self.ur + h, 0]
             self.Khat_old[h, 0] = self.Thehat_old[self.n + self.n*self.ur + h, 0]
-        # ---------------PEM iteration-------------------------
+        # ---------------recursive update-------------------------
 
         if on:
             self.Y[:] = Y_sys[:]  # read in transmission
@@ -147,10 +144,10 @@ class PEM(object):  #
             self.U_old = np.copy(U)
             self.Thehat_old = np.copy(self.Thehat)
             self.P_old2 = np.copy(P_old)
-            # squared prediction errors
+            
             self.Y_old = np.copy(self.Y)
             self.Yhat_old = np.copy(self.Yhat)
-            self.fix = np.copy(self.Y - self.Yhat)
+            
             self.Yhat = np.copy(Yhat_new)
 
         if not on:  # check if to stop # only ssm
