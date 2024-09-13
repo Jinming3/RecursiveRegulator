@@ -197,7 +197,7 @@ lr = 0.0001
 system = 'two_spring_motion5_8'
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = MechanicalSystem_i(dt=dt)  #
+model = MechanicalSystem_i(dt=dt)  
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
 model.eval()
@@ -219,7 +219,6 @@ factor.P_old2 *= 0.9
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
 factor.Thehat_old = np.random.rand(t, 1) * 0.01
-# print('seed=', np.random.get_state()[1][0])#
 factor.Xhat_old = np.zeros((n, 1))
 update = 1200
 off = 0  #int(80/dt)
