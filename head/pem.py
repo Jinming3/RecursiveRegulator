@@ -1,4 +1,6 @@
-
+"""
+recursive regulator linear update, dependent file, do not modify!
+"""
 import numpy as np
 
 
