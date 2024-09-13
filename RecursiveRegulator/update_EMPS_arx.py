@@ -6,13 +6,12 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-plt.style.use('F:/Project/head/tight.mplstyle')
 import os
 import sys
 import math
 import time
 
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 import header
 from pem import PEM
 from pem import normalize, R2
