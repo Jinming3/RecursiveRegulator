@@ -101,7 +101,6 @@ batch_num = 64
 batch_length = 64#32
 weight = 1.0  # initial state weight in loss function
 lr = 0.0001
-# state space
 n_x = 2
 np.random.seed(3)
 torch.manual_seed(3407)
