@@ -1,7 +1,6 @@
 """
 recursive regulator callable package
 """
-import copy
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
