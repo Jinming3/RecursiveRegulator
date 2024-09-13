@@ -5,15 +5,14 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
-plt.style.use('F:/Project/head/tight.mplstyle')
 import os
 import sys
 import math
 import time
 
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 import header
-from pem import PEM  # _step as PEM
+from pem import PEM  
 from pem import normalize, R2
 from header import MechanicalSystem_i, ForwardEulerPEM, ForwardEuler_i
 
@@ -201,7 +200,7 @@ initial_filename = f"{system}_initial"
 model = MechanicalSystem_i(dt=dt)  #
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
-# model.eval()
+model.eval()
 
 optimizer = torch.optim.Adam([
     {'params': model.parameters(), 'lr': lr},
