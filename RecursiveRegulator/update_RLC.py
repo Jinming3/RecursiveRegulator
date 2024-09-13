@@ -11,11 +11,11 @@ import math
 import time
 from scipy import signal
 
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 import header
 from pem import PEM
 from pem import normalize, R2
-from header import NeuralStateSpaceModel_i, ForwardEulerPEM, ForwardEuler_i  # MechanicalSystem
+from header import NeuralStateSpaceModel_i, ForwardEulerPEM, ForwardEuler_i  
 
 import matplotlib.pylab as pylab
 
@@ -120,7 +120,7 @@ bandwidth = 350e2
 std_devi = 60
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[0], changing[1]):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1e-1)  # 1     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1e-1) 
     Y_sys.append(Y)
     U.append(circuit.u)
 
@@ -142,7 +142,7 @@ bandwidth = 200e2
 std_devi = 30
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[2], N):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1)  # 1e-3     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1)  # 1e-3    
     Y_sys.append(Y)
     U.append(circuit.u)
 
@@ -175,7 +175,7 @@ threshold2 = 1  #0.98  # stop retrain
 update = 1200
 ur = 64
 
-off = 0  #int(2* 10**(-3)/ ts ) #total 3ms = 3000us0#
+off = 0  #int(2* 10**(-3)/ ts ) #total 3ms = 3000us
 n = 2
 t = n + n * ur + n
 factor = PEM(n, t, N, ur=ur)
