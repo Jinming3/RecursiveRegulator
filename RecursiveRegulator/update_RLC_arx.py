@@ -11,7 +11,7 @@ import math
 import time
 from scipy import signal
 
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 import header
 from pem import PEM
 from pem import normalize, R2
@@ -93,7 +93,7 @@ std_devi = 80
 v_in = white(bandwidth, time_all, std_devi, dt)
 
 for i in range(changing[0]):  # original condition with noise
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1e-2)  # 1e-3     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1e-2)  # 1e-3    
     Y_sys.append(Y)
     U.append(circuit.u)
 # -------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ bandwidth = 350e2  #150e3
 std_devi = 60
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[0], changing[1]):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1)  # 1e-3     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1)     
     Y_sys.append(Y)
     U.append(circuit.u)
 
@@ -115,7 +115,7 @@ bandwidth = 100e2  #150e3
 std_devi = 70
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[1], changing[2]):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-4, noise_process=1e-2)  #
+    Y = circuit.get_y(v_in[i], noise_measure=1e-4, noise_process=1e-2)  
     Y_sys.append(Y)
     U.append(circuit.u)
 
@@ -126,7 +126,7 @@ bandwidth = 200e2  #150e3
 std_devi = 30
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[2], N):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1)  # 1e-3     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1)  
     Y_sys.append(Y)
     U.append(circuit.u)
 
@@ -142,7 +142,7 @@ lr = 0.001
 
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = NeuralStateSpaceModel_i()  #
+model = NeuralStateSpaceModel_i()  
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
 model.eval()
