@@ -22,25 +22,6 @@ import statsmodels.api as sm
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
-# import matplotlib.pylab as pylab
-#
-# params = {
-#     # 'figure.figsize': (4.8, 3.7),
-#     'axes.labelsize': 11,
-#     'axes.labelpad': 0.5,
-#     'xtick.labelsize': 11,
-#     'ytick.labelsize': 11,
-#     'legend.fontsize': 11,
-#     'legend.labelspacing': 0.1,
-#     'legend.borderpad': 0.2,
-#     'legend.borderaxespad': 0.25,
-#     'legend.handletextpad': 0.3,
-#     'legend.handlelength': 1,
-#     'legend.loc': 'lower right',
-#
-# }
-# pylab.rcParams.update(params)
-
 
 # -- sin/cos wave ---
 def sinwave(dt, time_all, w=0.5):
@@ -59,7 +40,6 @@ def triangle(dt, time_all):
     p = 2
     for k in range(int(time_all / dt)):
         x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
-
         out.append(x)
     return out
 
@@ -108,14 +88,11 @@ time_exp = np.arange(N) * dt
 
 train_time = int(40 / dt)
 # train_time=N
-# update = 5  # original update
-
 update = 1200  #
 
 changing = changing.astype(int)
 
 p_ref = sinwave(dt, time_all)  # ref signal not change
-sig = 'sinwave'
 p_tri = triangle(dt, time_all)
 
 Y_sys = []
@@ -209,8 +186,8 @@ for i in range(2, N):
     y_lag_1 = pred
     y_lag_2 = y_lag_1
 
-#
-#
+
+
 threshold1 = 1  #0.91  # start retrain, R2
 threshold2 = 1  #0.95  # stop retrain
 
