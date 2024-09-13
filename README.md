@@ -2,7 +2,7 @@ The identification methods "Recursive Regulator" focuses on nonlinear systems an
 
 Language: Python 3.10
 
-System examples: 
+Three system examples: 
 in "RecursiveRegulator", 'update_{system}.py' contains varying system data and recursive regulator to adapt trained model, e.g., update_RLC.py. 
 'train_{system}.py' is to train and save nonlinear model for static systems.
 
