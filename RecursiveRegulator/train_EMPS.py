@@ -116,7 +116,7 @@ batch_num = 64
 batch_length = 32
 weight = 1.0
 lr = 0.0001
-# state space
+
 n_x = 2
 N = len(Y_sys)
 np.random.seed(3)
@@ -157,8 +157,7 @@ with torch.no_grad():
     error_scale = torch.sqrt(torch.mean(error_init**2, dim=(0, 1)))  # root MSE
 
 LOSS = []
-LOSS_initial = []
-LOSS_output = []
+
 start_time = time.time()
 for epoch in range(num_epoch):
     batch_x0, batch_x, batch_u, batch_y = get_batch()
@@ -171,14 +170,9 @@ for epoch in range(num_epoch):
     error_state = (batch_xhat - batch_x)/error_scale
     loss_state = torch.mean(error_state**2)  # MSE
 
-    # if epoch > 1000:
-    #     loss = loss_out + weight*loss_state
-    # else:
-    #     loss = loss_out
     loss = loss_out + weight * loss_state
     LOSS.append(loss.item())
-    LOSS_initial.append(loss_state.item())
-    LOSS_output.append(loss_out.item())
+  
 
     if (epoch+1) % 100 == 0:  # unpack before print
         print(f'epoch {epoch+1}/{num_epoch}: loss= {loss.item():.5f}, yhat= {batch_yhat[-1, -1, 0]:.4f}')
