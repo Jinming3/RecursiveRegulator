@@ -214,14 +214,6 @@ print(f"\nTrain time: {time.time() - start_time:.2f}")
 
 
 ts = dt.detach().numpy()
-if update == 5:
-    stop_t = np.array(simulator.stop)[:, 1] * ts
-    correction_t = np.array(simulator.correction)[:, 1] * ts
-    stop = simulator.stop
-    correction = simulator.correction
-    print(f'update at {correction}_{correction_t}')
-    print(f'stop at {stop}_{stop_t}')
-    work = np.sum(np.array(simulator.stop)[:, 1] - np.array(simulator.correction)[:, 1]) / N
 
 
 print(f"inference update{update}_R^2 = ", R2(Y_sys[:, 0], yhat))
