@@ -1,4 +1,6 @@
-
+"""
+train EMPS and save, static condition
+"""
 import pandas as pd
 import numpy as np
 import torch
