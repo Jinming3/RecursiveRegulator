@@ -211,10 +211,6 @@ xhat_data = simulator(x0, u, y)
 print(f"\nregulator time: {time.time() - start_time:.2f}")
 yhat = xhat_data[:, 0]
 
-stop = simulator.stop
-correction = simulator.correction
-print(f'update at {correction}')
-print(f'stop at {stop}')
 
 # ------ <<<--------------------------------------
 print("nn R^2 = ", R2(Y_sys[:, 0], yhat0))
