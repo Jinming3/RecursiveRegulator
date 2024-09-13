@@ -1,12 +1,9 @@
-""""
 
-"""
 import matplotlib
 import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-
 
 import os
 import sys
@@ -15,7 +12,7 @@ import time
 
 sys.path.append(os.path.join("../head/"))
 import header
-from pem import PEM, PEM_mimo
+from pem import PEM
 from pem import normalize, R2
 from header import MechanicalSystem_i, ForwardEulerPEM, ForwardEuler_i
 
@@ -140,7 +137,7 @@ lr = 0.0001
 
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = MechanicalSystem_i(dt=dt)  #
+model = MechanicalSystem_i(dt=dt)  
 
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
@@ -164,9 +161,8 @@ with torch.no_grad():
 print(f"\n NN Train time: {time.time() - start_time:.2f}")
 
 threshold1 = 1  #0.90  # start retrain, R2
-# threshold2 = 0.98  # stop retrain
-threshold2 = 1  # stop retrain
-# threshold2 = 0.97  # stop retrain
+threshold2 = 1  # 0.97 stop retrain
+
 n = 2
 ur = 64
 t = n + n * ur + n
@@ -176,13 +172,9 @@ factor.P_old2 *= 9e-2
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
 
-
 factor.Thehat_old = np.random.rand(t, 1) * 1e-2
 
-
 factor.Xhat_old = np.zeros((n, 1))
-# update = 5 # original update
-# update = 9
 update = 1200  # q size == hidden, inside koopman space
 off = 0  #int(35/dt)
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, update=update,
