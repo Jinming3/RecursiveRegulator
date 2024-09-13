@@ -9,7 +9,7 @@ matplotlib.use("TkAgg")
 import os
 import sys
 import math
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 from header import R2, normalize, MechanicalSystem_i, ForwardEuler
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
