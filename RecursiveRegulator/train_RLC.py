@@ -59,7 +59,7 @@ def triangle(dt, i, A=2):  # , time_all
     return x
 
 
-# ----
+
 class rlc:
     def __init__(self, vc, il, dvc, dil, dt):
         self.vc = vc  # capacitor voltage (V)
