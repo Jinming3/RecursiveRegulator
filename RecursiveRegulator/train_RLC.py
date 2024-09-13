@@ -151,6 +151,8 @@ with torch.no_grad():
     # traced_simulator = torch.jit.trace(simulator, (batch_x0, batch_u))
     batch_yhat = batch_xhat[:, :, [0]]
     error_init = batch_yhat - batch_y
+    # error_scale = torch.sqrt(torch.mean(error_init**2, dim=(0, 1)))  # root MSE
+    # error_scale = error_scale[0]
 
 LOSS = []
 
