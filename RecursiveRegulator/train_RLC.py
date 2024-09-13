@@ -12,7 +12,7 @@ import sys
 import math
 from scipy import signal
 
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel_i
 import matplotlib.pylab as pylab
 
