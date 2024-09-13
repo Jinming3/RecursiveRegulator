@@ -1,6 +1,12 @@
 The identification methods "Recursive Regulator" focuses on nonlinear systems and real-time model adaptation.
 
 Language: Python 3.10
+Installation requirements: 
+numpy 
+torch 
+matplotlib
+scipy
+statsmodels
 
 Three system examples: 
 in "RecursiveRegulator", 'update_{system}.py' contains varying system data and recursive regulator to adapt trained model, e.g., update_RLC.py. 
