@@ -12,7 +12,7 @@ import sys
 import math
 from numpy.linalg import inv
 
-sys.path.append(os.path.join("F:/Project/head/"))
+sys.path.append(os.path.join("../head/"))
 from header import R2, normalize
 from header import MechanicalSystem_i
 from header import ForwardEuler_i
