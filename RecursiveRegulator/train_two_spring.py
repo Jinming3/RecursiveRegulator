@@ -1,7 +1,7 @@
-"""
-train and save, static condition
-"""
+""""
 
+"""
+import pandas as pd
 import numpy as np
 import torch
 import time
@@ -14,10 +14,10 @@ import sys
 import math
 from numpy.linalg import inv
 
-sys.path.append(os.path.join("../head/"))
+
 from header import R2, normalize
-from header import MechanicalSystem_i
-from header import ForwardEuler_i
+from header import MechanicalSystem_u
+from header import ForwardEuler
 # -------------
 # define the system parameters
 m1 = 20
@@ -26,17 +26,52 @@ k1 = 1000
 k2 = 2000
 d1 = 1
 d2 = 5
-Fc = 0.05
+Fc = 0.05 # 20.3935
 
 def sinwave(dt, i, w=0.5): # 0.1
-
-    A = 4
+    # A = 5.0
+    A = 4#2.0
     x = A * np.cos(w * i * math.pi * dt)
     # x = A * np.sin(w*i * math.pi* dt)
     return x
 
 
+# class Motion:
+#     def __init__(self, dt, pos1, pos2, vel1, vel2, acc1, acc2):
+#         self.pos1 = pos1
+#         self.pos2 = pos2
+#         self.vel1 = vel1
+#         self.vel2 = vel2
+#         self.acc1 = acc1
+#         self.acc2 = acc2
+#         self.dt = dt
+#
+#     def get_y(self, noise_process=0.0, noise_measure=0.0):
+#         self.u = sinwave(self.dt, i)
+#         # self.u = 5.0
+#         self.acc1 = -(k1 + k2 / m1) * self.pos1 - (d1 + d2) / m1 * self.vel1 + k2 / m1 * self.pos2 + d2 / m1 * self.vel2
+#         self.acc2 = k2 / m2 * self.pos1 + d2 / m2 * self.vel1 - k2 / m2 * self.pos2 - d2 / m2 * self.vel2 + 1 / m2 * self.u + 0 * np.random.randn() * noise_process
+#         self.vel1 = self.vel1 + self.acc1 * self.dt
+#         self.vel2 = self.vel2 + self.acc2 * self.dt
+#         self.pos1 = self.pos1 + self.vel1 * self.dt
+#         self.pos2 = self.pos2 + self.vel2 * self.dt
+#         output = self.pos1 + np.random.randn() * noise_measure
+#         return output
 
+
+
+# Ac = np.matrix([[0, 1, 0, 0], [-(k1 + k2) / m1, -(d1 + d2) / m1, k2 / m1, d2 / m1], [0, 0, 0, 1],
+#                 [k2 / m2, d2 / m2, -k2 / m2, -d2 / m2]])
+# Bc = np.matrix([[0], [0], [0], [1 / m2]])
+# Cc = np.matrix([[1, 0, 0, 0]])
+# continuous to discrete
+# I = np.identity(Ac.shape[0])  # this is an identity matrix
+# A = inv(I - dt * Ac)
+# B = A * dt * Bc
+# C = Cc
+# # check the eigenvalues
+# eigen_A = np.linalg.eig(Ac)[0]
+# eigen_Aid = np.linalg.eig(A)[0]
 
 class Motion:
     def __init__(self, dt, pos1, pos2, vel1, vel2, acc1, acc2):
@@ -67,6 +102,38 @@ time_all = 100
 dt = 0.05
 N = int(time_all / dt)
 time_exp = np.arange(N) * dt
+
+# # the following function simulates the state-space model using the backward Euler method
+# # the input parameters are:
+# # -- Ad,Bd,Cd - discrete-time system matrices
+# # -- initial_state - the initial state of the system
+# # -- time_steps - the total number of simulation time steps
+# # this function returns the state sequence and the output sequence
+# # they are stored in the matrices Xd and Yd respectively
+# def simulate(Ad, Bd, Cd, initial_state, input_sequence, time_steps):
+#     Xd = np.zeros(shape=(A.shape[0], time_steps + 1))
+#     Yd = np.zeros(shape=(C.shape[0], time_steps + 1))
+#     for i in range(0, time_steps):
+#         if i == 0:
+#             Xd[:, [i]] = initial_state
+#             Yd[:, [i]] = C * initial_state
+#             x = Ad * initial_state + Bd * input_sequence[i]
+#         else:
+#             Xd[:, [i]] = x
+#             Yd[:, [i]] = C * x
+#             x = Ad * x + Bd * input_sequence[i]
+#     Xd[:, [-1]] = x
+#     Yd[:, [-1]] = C * x
+#     return Xd, Yd
+#
+#
+# state, output = simulate(A, B, C, x0, input_seq, time_all)
+# plt.plot(output[0, :])
+# plt.xlabel('Discrete time instant-k')
+# plt.ylabel('Position- d')
+# plt.title('System response')
+# plt.savefig('step_response1.png')
+# plt.show()
 
 
 real = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
@@ -101,6 +168,7 @@ batch_num = 64
 batch_length = 64#32
 weight = 1.0  # initial state weight in loss function
 lr = 0.0001
+# state space
 n_x = 2
 np.random.seed(3)
 torch.manual_seed(3407)
@@ -110,9 +178,9 @@ X[:, 0] = np.copy(Y_sys[:, 0])
 X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
-model = MechanicalSystem_i(dt=dt)
+model = MechanicalSystem_u(dt=dt)
 
-simulator = ForwardEuler_i(model=model, dt=dt)
+simulator = ForwardEuler(model=model, dt=dt)
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
 optimizer = torch.optim.Adam([
@@ -179,6 +247,7 @@ torch.save({'model_state_dict': simulator.model.state_dict(),
 torch.save(x_fit, os.path.join("models", initial_filename))
 
 
+
 # initial state estimate
 x0_vali = x_fit[0, :].detach().numpy()
 x0_vali[1] = 0.0
@@ -190,7 +259,7 @@ with torch.no_grad():
     xhat_vali = xhat_vali.squeeze(1)
     yhat_vali = xhat_vali[:, 0]
 
-print("R^2 = ", R2(Y_sys[:, 0], yhat_vali))
+print("R^2 = ", R2(Y_sys[:, 0], yhat_vali))  # .detach().numpy()
 
 fig, ax = plt.subplots(2, 1, sharex=True)
 ax[0].plot(Y_sys, 'g', label='y')
