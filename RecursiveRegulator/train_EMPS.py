@@ -1,6 +1,4 @@
-"""
-train EMPS and save, static condition
-"""
+
 import pandas as pd
 import numpy as np
 import torch
@@ -11,8 +9,7 @@ matplotlib.use("TkAgg")
 import os
 import sys
 import math
-sys.path.append(os.path.join("../head/"))
-from header import R2, normalize, MechanicalSystem_i, ForwardEuler
+from header import R2, normalize, MechanicalSystem_u, ForwardEuler # not from head folder but local
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
@@ -64,11 +61,13 @@ satu = 10  # saturation
 # satu = 100  # saturation
 # # -------------------------------------------------
 # # ------- time-invariant system -----
-system = 'update_i'
+system = 'update_ku'
 
 dt = 0.005
 time_all = np.array([10])# 20seconds
 
+# dt=0.3
+# time_all = np.array([1000])
 
 sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
 
@@ -77,7 +76,19 @@ U = []
 
 p_ref = sinwave(dt, time_all)
 sig = 'sinwave'
+# ------------------- real ref --------------
+# df = pd.read_csv("/home/jsun/SUN/Project/DATA/EMPS/control_EMPS.csv")
+# time_exp = np.array(df['t']).astype(np.float32)
+# p_ref0 = np.array(df['p_ref']).astype(np.float32)
+# p_ref1 = np.array(df['p_ref1']).astype(np.float32)
+# pulse = np.array(df['pulse'])
+# p_ref = []
+# dt = 0.005
+# for k in range(0, len(time_exp)):
+#     if k % 5 == 0:
+#         p_ref.append(p_ref0[k])
 
+# ----------------------------------------------------
 simu = 'train'
 # simu = 'noise'
 noise = 0
@@ -86,16 +97,22 @@ if simu == 'train':
 if simu == 'noise':
     noise = 0.01
 #
-for i in p_ref:
+for i in p_ref:  # no noise for training, noise for test
     p_control = i
     y = sampling.measure(p_control, noise * 10, noise)
     Y_sys.append(y)
     U.append(sampling.u)
+# np.savetxt('data_Y.txt', Y_sys, delimiter=',')
+# np.savetxt('data_U.txt', U, delimiter=',')
+
 
 Y_sys = np.array(Y_sys, dtype=np.float32)
 U = np.array(U, dtype=np.float32)
+
+
 Y_sys = Y_sys[:, np.newaxis]
 U = U[:, np.newaxis]
+
 
 
 Y_sys = normalize(Y_sys, 1)
@@ -114,9 +131,9 @@ dt = torch.tensor(dt , dtype=torch.float32)  #
 num_epoch = 10000
 batch_num = 64
 batch_length = 32
-weight = 1.0
+weight = 1.0  # initial state weight in loss function
 lr = 0.0001
-
+# state space
 n_x = 2
 N = len(Y_sys)
 np.random.seed(3)
@@ -127,7 +144,8 @@ X[:, 0] = np.copy(Y_sys[:, 0])
 X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
-model = MechanicalSystem_i(dt=dt)
+model = MechanicalSystem_u(dt=dt)
+# simulator = header.RK4(model=model, dt=dt)
 simulator = ForwardEuler(model=model, dt=dt)
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
@@ -147,6 +165,7 @@ def get_batch(batch_num=batch_num, batch_length=batch_length):
     batch_y = torch.tensor(Y_sys[batch_index])
     return batch_x0, batch_x, batch_u, batch_y
 
+
 # compute initial error as scale.
 with torch.no_grad():
     batch_x0, batch_x, batch_u, batch_y = get_batch()
@@ -157,7 +176,8 @@ with torch.no_grad():
     error_scale = torch.sqrt(torch.mean(error_init**2, dim=(0, 1)))  # root MSE
 
 LOSS = []
-
+LOSS_initial = []
+LOSS_output = []
 start_time = time.time()
 for epoch in range(num_epoch):
     batch_x0, batch_x, batch_u, batch_y = get_batch()
@@ -170,9 +190,14 @@ for epoch in range(num_epoch):
     error_state = (batch_xhat - batch_x)/error_scale
     loss_state = torch.mean(error_state**2)  # MSE
 
+    # if epoch > 1000:
+    #     loss = loss_out + weight*loss_state
+    # else:
+    #     loss = loss_out
     loss = loss_out + weight * loss_state
     LOSS.append(loss.item())
-  
+    LOSS_initial.append(loss_state.item())
+    LOSS_output.append(loss_out.item())
 
     if (epoch+1) % 100 == 0:  # unpack before print
         print(f'epoch {epoch+1}/{num_epoch}: loss= {loss.item():.5f}, yhat= {batch_yhat[-1, -1, 0]:.4f}')
@@ -198,6 +223,8 @@ torch.save(x_fit, os.path.join("models", initial_filename))
 
 fig, ax = plt.subplots(1, 1)
 ax.plot(LOSS, label='loss_total')
+# ax.plot(LOSS_output, label='loss_fit_y')
+# ax.plot(LOSS_initial, label='loss_initial_state')
 ax.grid(True)
 ax.set_xlabel("Iteration")
 plt.legend()
@@ -224,5 +251,5 @@ ax[0].legend()
 ax[1].plot(U, 'k', label='u')
 ax[1].set_xlabel('Time')
 ax[1].legend()
-
+# plt.show()
 
