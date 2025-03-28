@@ -32,10 +32,10 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 #
 params = {
     # 'figure.figsize': (4.8, 3.7),
-    'axes.labelsize': 11,
+    'axes.labelsize': 15,
     'axes.labelpad': 0.5,
-    'xtick.labelsize': 11,
-    'ytick.labelsize': 11,
+    'xtick.labelsize': 14,
+    'ytick.labelsize': 14,
     'legend.fontsize': 11,
     'legend.labelspacing': 0.1,
     'legend.borderpad': 0.2,
@@ -127,7 +127,7 @@ Fc, offset = 20.3935, -3.1648
 satu = 10  # saturation
 
 
-system = 'update_ku'
+system = 'update_ku_b'
 dt = 0.005
 time_all = np.array([70])
 changing = np.array([20, 50]) / dt
@@ -143,12 +143,12 @@ changing = np.array([20, 50]) / dt
 N = int(time_all[-1] / dt)
 time_exp = np.arange(N) * dt
 
-train_time = int(40/ dt)
-
+# train_time = int(40/ dt)
+train_time = int(38/ dt) #38
 # train_time=N
 # update = 5  # original update,  yhat_pem add to x_step, use threshold
 
-update = 1201# with 2 NN, can be stopped at train time
+update = 12010# with 2 NN, can be stopped at train time
 
 
 changing = changing.astype(int)
@@ -256,11 +256,11 @@ checkpoint = torch.load(os.path.join("models", model_filename))
 # model.eval()
 x0 = x_fit[[0], :].detach()
 
-optimizer = torch.optim.Adam([
-    {'params': model.parameters(), 'lr': lr},
-    {'params': [x_fit], 'lr': lr}
-], lr=lr * 10)
-optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+# optimizer = torch.optim.Adam([
+#     {'params': model.parameters(), 'lr': lr},
+#     {'params': [x_fit], 'lr': lr}
+# ], lr=lr * 10)
+# optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
 
 
@@ -302,7 +302,7 @@ threshold2 = 1#0.95  # stop retrain
 # threshold1 = 0.96  # original
 # threshold2 = 0.98 # stop retrain
 n= 2
-ur=64
+ur=65 #64
 t=n+n*ur+n
 factor = PEM(n, t, N, ur=ur)
 factor.P_old2 *= 0.09  # 0.009#0.09
@@ -476,7 +476,7 @@ ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 ax[1].plot(time_exp[train_time-1], Y_sys[train_time-1], 'bx')
 ax[1].set_ylabel("(b)")
 ax[1].legend()  #bbox_to_anchor=(1.141, 0.7)
-ax[1].set_xlabel('Time($s$)')
+ax[1].set_xlabel('Time(s)')
 # ax[2].plot(time_exp, Y_sys, 'g', label='y')
 # ax[2].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
 # ax[2].plot(time_exp[changing], Y_sys[changing], 'kx')

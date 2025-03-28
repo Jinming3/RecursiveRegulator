@@ -162,7 +162,7 @@ def vel(pos):
 v_est = vel(Y_sys)
 dt = torch.tensor(dt, dtype=torch.float32)  #
 # # -----------------------------------------------------------------------
-system = 'two_spring_motion5_8'
+system = 'two_spring_motion5_8_b'
 num_epoch = 10000
 batch_num = 64
 batch_length = 64#32

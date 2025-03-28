@@ -104,7 +104,7 @@ bandwidth= 300e2 #150e2 #150e3
 std_devi = 80
 
 # -------
-system = 'RLC_aging_i'
+system = 'RLC_aging_i_b'
 circuit = rlc(vc=0, il=0, dvc=0, dil=0, dt=dt)
 
 v_in = white(bandwidth, time_all, std_devi, dt)

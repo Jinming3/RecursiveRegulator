@@ -41,7 +41,7 @@ pylab.rcParams.update(params)
 # dt = time_exp[1] - time_exp[0]
 # U = np.array(df_data[['V_IN']]).astype(np.float32)
 # X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
-system = 'RLC_aging_i'
+system = 'RLC_aging_i_b'
 np.random.seed(7)
 torch.manual_seed(0)
 # -------
@@ -159,8 +159,8 @@ for i in range(changing[2], N):
     Y = circuit.get_y(v_in[i], noise_measure=1e-3 , noise_process=1)  # 1e-3     1
     Y_sys.append(Y)
     U.append(circuit.u)
-np.savetxt('data_rlc_Y_change.txt', Y_sys, delimiter=',')
-np.savetxt('data_rlc_U_change.txt', U, delimiter=',')
+# np.savetxt('data_rlc_Y_change.txt', Y_sys, delimiter=',')
+# np.savetxt('data_rlc_U_change.txt', U, delimiter=',')
 Y_sys = np.reshape(Y_sys, (-1, 1)).astype(np.float32)
 U = np.reshape(U, (-1, 1)).astype(np.float32)
 
@@ -195,8 +195,8 @@ threshold2 = 1#0.98  # stop retrain
 
 
 
-update = 1201#12#11  # 1
-ur=64#2
+update = 12010#12#11  # 1
+ur=65#2
 
 off = 0#int(2* 10**(-3)/ ts ) #total 3ms = 3000us0#
 n = 2

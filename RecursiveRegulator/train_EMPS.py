@@ -61,7 +61,7 @@ satu = 10  # saturation
 # satu = 100  # saturation
 # # -------------------------------------------------
 # # ------- time-invariant system -----
-system = 'update_ku'
+system = 'update_ku_b'
 
 dt = 0.005
 time_all = np.array([10])# 20seconds

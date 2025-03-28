@@ -214,7 +214,7 @@ U = U[:, np.newaxis]
 dt = torch.tensor(dt, dtype=torch.float32)
 
 lr = 0.0001  # not used in PEM updateing
-system = 'two_spring_motion5_8'
+system = 'two_spring_motion5_8_b'
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
 model = MechanicalSystem_u(dt=dt)  #
@@ -235,7 +235,7 @@ model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=
 threshold1 = 1#0.97  # start retrain, R2
 threshold2 = 1#0.98  # stop retrain
 n= 2
-ur=64
+ur=65
 t= n+n*ur+n
 factor = PEM(n, t, N, ur=ur)
 factor.P_old2 *= 0.9
@@ -244,7 +244,7 @@ np.random.seed(3)
 factor.Thehat_old = np.random.rand(t, 1) * 0.01
 # print('seed=', np.random.get_state()[1][0])#
 factor.Xhat_old = np.zeros((n, 1))
-update = 1201
+update = 12010
 off = 0#int(80/dt)
 # simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train = off) #optimizer=optimizer,
@@ -317,7 +317,7 @@ ax[1].legend(loc=4)
 ax[2].plot(time_exp, U, 'k', label='$u$')
 # ax[2].plot(time_exp[changing], U[changing], 'kx', label='changing')
 ax[2].set_ylabel("(c)")
-ax[2].set_xlabel('Time($s$)')
+ax[2].set_xlabel('Time(s)')
 ax[2].legend(loc=4)
 
 #

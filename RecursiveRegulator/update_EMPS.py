@@ -106,7 +106,7 @@ M, Fv = 95.1089, 203.5034
 Fc, offset = 20.3935, -3.1648
 # Fc, offset = 0, 0  # remove nonlinear part
 satu = 10  # saturation
-system = 'update_ku'
+system = 'update_ku_b'
 dt = 0.005
 time_all = np.array([70])
 changing = np.array([20, 50]) / dt
@@ -173,8 +173,8 @@ for i in range(changing[1], N):
 ##------
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
-np.savetxt("data_U_change_emps.txt", U)
-np.savetxt("data_Y_change_emps.txt", Y_sys)
+# np.savetxt("data_U_change_emps.txt", U)
+# np.savetxt("data_Y_change_emps.txt", Y_sys)
 
 Y_sys = np.asarray(Y_sys, dtype=np.float32)
 U = np.asarray(U, dtype=np.float32)
@@ -216,7 +216,7 @@ threshold1 = 1 #0.90  # start retrain, R2
 threshold2 = 1  # stop retrain
 # threshold2 = 0.97  # stop retrain
 n=2
-ur = 64
+ur = 65#64
 t = n +n*ur + n
 factor = PEM(n, t, N, ur=ur)
 # factor.P_old2 *= 0.09
@@ -233,7 +233,7 @@ factor.Thehat_old = np.random.rand(t, 1) * 1e-2#4#10#7#10 #4  8
 factor.Xhat_old = np.zeros((n, 1))
 # update = 5 # original update
 # update = 9 # add pem fix
-update = 1201 # q size == hidden, inside koopman space
+update = 12010 # q size == hidden, inside koopman space
 off = 0#int(35/dt)
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, update=update,
                             threshold1=threshold1, threshold2=threshold2, train=off)  # optimizer=optimizer,
@@ -311,16 +311,18 @@ if off!=0:
 
 ax[1].set_ylabel("(b)")
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))
+ax[1].set_xlabel('Time(s)')
 
 # ax[2].plot(time_exp, U, 'k', label='$u$')
-# # ax[1].plot(time_exp[changing], U[changing], 'kx', label='changing')
 # ax[2].set_ylabel("(c)")
 # ax[2].legend()
 # ax[3].plot(time_exp, ref_signal, 'k', label='$ref$')  #
 # ax[3].legend()
 # ax[3].set_ylabel("(d)")
-ax[1].set_xlabel('Time($s$)')
-# #
+# ax[3].set_xlabel('Time(s)')
+
+
+
 # fig, ax = plt.subplots(6, 1, sharex=True)
 # ax[0].plot(time_exp, Thehat[:, 0], 'g', label='a0')
 # ax[0].plot(time_exp[changing], Thehat[changing, 0], 'kx')
