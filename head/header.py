@@ -77,7 +77,8 @@ class MechanicalSystem_u(nn.Module):  # koopman
         self.phi_k = nn.Sequential(nn.Linear(n_x, self.hidden),  # 3*1
                                  # nn.LeakyReLU(negative_slope=0.4),
                                  nn.ReLU())# nonlinear to lift x
-        self.phi_b = nn.Linear(1, self.hidden)   #  linear to lift u
+        # self.phi_b = nn.Linear(1, self.hidden)   #  linear to lift u
+        self.phi_b = nn.Linear(1, self.hidden, bias=False)   #  linear to lift u
 
         self.inv_phi = nn.Linear(self.hidden, 1)
         # self.q_bar = nn.Parameter(torch.zeros(self.hidden), requires_grad=False) # at training it's only 0
@@ -105,7 +106,7 @@ class MechanicalSystem_u(nn.Module):  # koopman
             for i in self.phi_b.modules():
                 if isinstance(i, nn.Linear):
                     nn.init.normal_(i.weight, mean=0, std=1e-3)
-                    nn.init.constant_(i.bias, val=0)
+                    # nn.init.constant_(i.bias, val=0) # lifing B with no bias
             for i in self.inv_phi.modules():
                 if isinstance(i, nn.Linear):
                     nn.init.normal_(i.weight, mean=0, std=1e-3)
@@ -152,7 +153,9 @@ class NeuralStateSpaceModel_u(nn.Module):  # when not pos and vel, no derivative
 
         self.phi_k = nn.Sequential(nn.Linear(n_x , self.n_feat),
                                    activation)
-        self.phi_b = nn.Linear(n_u, self.n_feat)
+        # self.phi_b = nn.Linear(n_u, self.n_feat)
+        self.phi_b = nn.Linear(n_u, self.n_feat, bias=False)
+
 
         self.inv_phi = nn.Linear(self.n_feat, n_x)
 
@@ -178,7 +181,7 @@ class NeuralStateSpaceModel_u(nn.Module):  # when not pos and vel, no derivative
             for m in self.phi_b.modules():
                 if isinstance(m, nn.Linear):
                     nn.init.normal_(m.weight, mean=0, std=1e-4)
-                    nn.init.constant_(m.bias, val=0)
+                    # nn.init.constant_(m.bias, val=0)
             for m in self.inv_phi.modules():
                 if isinstance(m, nn.Linear):
                     nn.init.normal_(m.weight, mean=0, std=1e-4)
@@ -617,7 +620,6 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
 
                 u_in = self.model.out_k.clone().detach().numpy().T
 
-
                 # print(f'{q} Bhat,', self.factor.Bhat)
                 self.factor.pem_one(0, u_in, on=False)  #(y[q-1] - y_nn)*
 
@@ -633,7 +635,8 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
                     x_step = x_step + dx * self.dt
                     y_nn = x_step[:, 0].clone().detach().numpy()
                     # u_in = x_step.clone().detach().numpy().T
-                    u_in = self.model.out_k.clone().detach().numpy().T
+                    u_in = np.concatenate((self.model.out_k.clone().detach().numpy().T, u_step),axis=0)
+                    # u_in =self.model.out_k.clone().detach().numpy().T
                     # print(f'{q} Bhat,', self.factor.Bhat)
                     self.factor.pem_one(y[q] - y_nn, u_in, on=True)
                     x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
@@ -642,15 +645,42 @@ class ForwardEulerPEM(nn.Module):  # use steps or R2 as switch
                     x_step = torch.tensor(x_out, dtype=torch.float32)
                     q = q+1
 
-
-                u_in = self.model.out_k.clone().detach().numpy().T
+                u_in = np.concatenate((self.model.out_k.clone().detach().numpy().T, u_step), axis=0)
+                # u_in = self.model.out_k.clone().detach().numpy().T
 
 
                 # print(f'{q} Bhat,', self.factor.Bhat)
                 self.factor.pem_one(0, u_in, on=False)  #(y[q-1] - y_nn)*
 
 
+            if self.update == 12010:  # case 1201, in paper u_in = 65, regulator G only x and u
+                u_step = u[q]
+                dx = self.model(x_step, u_step)
+                x_step = x_step + dx * self.dt + torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
+                self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
+                q = q + 1
+                while q < self.train:
+                    u_step = u[q]
+                    dx = self.model(x_step, u_step)
+                    x_step = x_step + dx * self.dt
+                    y_nn = x_step[:, 0].clone().detach().numpy()
+                    # u_in = x_step.clone().detach().numpy().T
+                    u_in = np.concatenate((self.model.out_k.clone().detach().numpy().T, u_step),axis=0)
+                    # u_in =self.model.out_k.clone().detach().numpy().T
+                    # print(f'{q} Bhat,', self.factor.Bhat)
+                    self.factor.pem_one(y[q] - y_nn, u_in, on=True)
+                    x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
+                    # self.pem_out.append(self.factor.Xhat[:, 0])
+                    self.xhat_data[q, :] = x_out
+                    x_step = torch.tensor(x_out, dtype=torch.float32)
+                    q = q+1
 
+                u_in = np.concatenate((self.model.out_k.clone().detach().numpy().T, u_step), axis=0)
+                # u_in = self.model.out_k.clone().detach().numpy().T
+
+
+                # print(f'{q} Bhat,', self.factor.Bhat)
+                self.factor.pem_one(0, u_in, on=False)  #(y[q-1] - y_nn)*
 
             if self.update == 121:  # case 12 but stop pem update at given time, self.train
                 u_step = u[q]
