@@ -16,7 +16,7 @@ from numpy.linalg import inv
 
 
 from header import R2, normalize
-from header import MechanicalSystem_u
+from header import MechanicalSystem_qu
 from header import ForwardEuler
 # -------------
 # define the system parameters
@@ -162,7 +162,7 @@ def vel(pos):
 v_est = vel(Y_sys)
 dt = torch.tensor(dt, dtype=torch.float32)  #
 # # -----------------------------------------------------------------------
-system = 'two_spring_motion5_8_b'
+system = 'two_spring_motion5_8_qb'
 num_epoch = 10000
 batch_num = 64
 batch_length = 64#32
@@ -178,7 +178,7 @@ X[:, 0] = np.copy(Y_sys[:, 0])
 X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
-model = MechanicalSystem_u(dt=dt)
+model = MechanicalSystem_qu(dt=dt)
 
 simulator = ForwardEuler(model=model, dt=dt)
 params_net = list(simulator.model.parameters())

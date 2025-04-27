@@ -18,8 +18,8 @@ import time
 import header
 from pem import PEM
 from pem import normalize, R2
-from header import MechanicalSystem_u, ForwardEulerPEM, ForwardEuler
-
+from header import  ForwardEulerPEM, ForwardEuler
+from header import MechanicalSystem_qu
 
 params = {
     # 'figure.figsize': (4.8, 3.7),
@@ -32,6 +32,10 @@ params = {
 
           }
 pylab.rcParams.update(params)
+
+
+
+system = 'update_qku_b'
 
 # params = {
 #     # 'figure.figsize': (4.8, 3.7),
@@ -106,7 +110,7 @@ M, Fv = 95.1089, 203.5034
 Fc, offset = 20.3935, -3.1648
 # Fc, offset = 0, 0  # remove nonlinear part
 satu = 10  # saturation
-system = 'update_ku_b'
+
 dt = 0.005
 time_all = np.array([70])
 changing = np.array([20, 50]) / dt
@@ -187,7 +191,7 @@ lr = 0.0001  # not used in PEM updateing
 
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = MechanicalSystem_u(dt=dt)  #
+model = MechanicalSystem_qu(dt=dt)  #
 
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
@@ -297,7 +301,7 @@ print('fit = ', fit_index(Y_sys,yhat))
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
 print('nn r2=', R2(Y_sys, yhat0))
 
-fig, ax = plt.subplots(2, 1, sharex=True,  tight_layout=True, figsize=(9, 6))  #
+fig, ax = plt.subplots(4, 1, sharex=True,  tight_layout=True, figsize=(9, 6))  #
 ax[0].plot(time_exp, Y_sys, 'g', label='$y$')
 ax[0].plot(time_exp, yhat0, 'r--', label='$\hat{y}_{N}$')
 ax[0].plot(time_exp[changing], Y_sys[changing], 'kx')
@@ -311,15 +315,15 @@ if off!=0:
 
 ax[1].set_ylabel("(b)")
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))
-ax[1].set_xlabel('Time(s)')
+# ax[1].set_xlabel('Time(s)')
 
-# ax[2].plot(time_exp, U, 'k', label='$u$')
-# ax[2].set_ylabel("(c)")
-# ax[2].legend()
-# ax[3].plot(time_exp, ref_signal, 'k', label='$ref$')  #
-# ax[3].legend()
-# ax[3].set_ylabel("(d)")
-# ax[3].set_xlabel('Time(s)')
+ax[2].plot(time_exp, U, 'k', label='$u$')
+ax[2].set_ylabel("(c)")
+ax[2].legend()
+ax[3].plot(time_exp, ref_signal, 'k', label='$ref$')  #
+ax[3].legend()
+ax[3].set_ylabel("(d)")
+ax[3].set_xlabel('Time(s)')
 
 
 

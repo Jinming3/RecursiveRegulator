@@ -21,7 +21,7 @@ import time
 import header
 from pem import PEM
 from pem import normalize, R2
-from header import MechanicalSystem_u, ForwardEulerPEM, ForwardEuler
+from header import MechanicalSystem_qu, ForwardEulerPEM, ForwardEuler
 
 import statsmodels.api as sm
 
@@ -46,6 +46,9 @@ params = {
 
 }
 pylab.rcParams.update(params)
+
+
+system = 'update_qku_b'
 
 # def simple(params, Y, U, dt=1, train_time=1, pre_ahead=True):
 #
@@ -127,7 +130,7 @@ Fc, offset = 20.3935, -3.1648
 satu = 10  # saturation
 
 
-system = 'update_ku_b'
+
 dt = 0.005
 time_all = np.array([70])
 changing = np.array([20, 50]) / dt
@@ -144,7 +147,7 @@ N = int(time_all[-1] / dt)
 time_exp = np.arange(N) * dt
 
 # train_time = int(40/ dt)
-train_time = int(38/ dt) #38
+train_time = int(30/ dt) #38
 # train_time=N
 # update = 5  # original update,  yhat_pem add to x_step, use threshold
 
@@ -250,7 +253,7 @@ lr = 0.0001  # not used in PEM updateing
 
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = MechanicalSystem_u(dt=dt)  #
+model = MechanicalSystem_qu(dt=dt)  #
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
 # model.eval()

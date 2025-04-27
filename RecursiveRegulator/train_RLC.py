@@ -14,7 +14,7 @@ import sys
 import math
 from scipy import signal
 
-from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel_u
+from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel_qu
 import matplotlib.pylab as pylab
 
 params = {
@@ -39,6 +39,8 @@ pylab.rcParams.update(params)
 # torch.manual_seed(3407)
 np.random.seed(0)
 torch.manual_seed(0)
+system = 'RLC_aging_i_qb'
+
 def inductance(il, L0):
     out = L0 * (0.9 * (1 / math.pi * np.arctan(-5 * (np.abs(il) - 5)) + 0.5) + 0.1)
     return out
@@ -104,7 +106,7 @@ bandwidth= 300e2 #150e2 #150e3
 std_devi = 80
 
 # -------
-system = 'RLC_aging_i_b'
+
 circuit = rlc(vc=0, il=0, dvc=0, dil=0, dt=dt)
 
 v_in = white(bandwidth, time_all, std_devi, dt)
@@ -148,7 +150,7 @@ n_x = 2
 
 
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
-model = NeuralStateSpaceModel_u()
+model = NeuralStateSpaceModel_qu()
 # model = MechanicalSystem(dt=dt)
 # simulator = header.RK4(model=model, dt=dt)
 simulator = ForwardEuler(model=model, dt=1.0)  #, dt=dt # not acceleration, no dt

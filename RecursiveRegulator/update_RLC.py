@@ -21,7 +21,7 @@ from scipy import signal
 import header
 from pem import PEM  # _step as PEM
 from pem import normalize, R2
-from header import NeuralStateSpaceModel_u, ForwardEulerPEM, ForwardEuler
+from header import NeuralStateSpaceModel_qu, ForwardEulerPEM, ForwardEuler
 
 
 params = {
@@ -41,7 +41,7 @@ pylab.rcParams.update(params)
 # dt = time_exp[1] - time_exp[0]
 # U = np.array(df_data[['V_IN']]).astype(np.float32)
 # X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
-system = 'RLC_aging_i_b'
+system = 'RLC_aging_i_qb'
 np.random.seed(7)
 torch.manual_seed(0)
 # -------
@@ -177,7 +177,7 @@ lr = 0.001  # not used in PEM updateing
 
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = NeuralStateSpaceModel_u()  #
+model = NeuralStateSpaceModel_qu()  #
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
 model.eval()
@@ -203,7 +203,7 @@ n = 2
 t = n +n*ur + n
 factor = PEM(n, t, N, ur=ur)
 
-factor.P_old2 *= 9e-2#1#3 #4
+factor.P_old2 *= 9e-1#1#3 #4
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
 factor.Thehat_old = np.random.rand(t, 1) * 1e-2#4 #4  8

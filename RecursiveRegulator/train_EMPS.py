@@ -9,11 +9,11 @@ matplotlib.use("TkAgg")
 import os
 import sys
 import math
-from header import R2, normalize, MechanicalSystem_u, ForwardEuler # not from head folder but local
-
+from header import R2, normalize, ForwardEuler  # not from head folder but local
+from header import MechanicalSystem_qu #as MechanicalSystem_u   #
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
-
+system = 'update_qku_b'
 # -- sin/cos wave ---
 def sinwave(dt, time, w=0.5):
     out = []
@@ -61,10 +61,10 @@ satu = 10  # saturation
 # satu = 100  # saturation
 # # -------------------------------------------------
 # # ------- time-invariant system -----
-system = 'update_ku_b'
+
 
 dt = 0.005
-time_all = np.array([10])# 20seconds
+time_all = np.array([15])# 20seconds  10
 
 # dt=0.3
 # time_all = np.array([1000])
@@ -128,7 +128,7 @@ def vel(pos):
 v_est = vel(Y_sys)
 dt = torch.tensor(dt , dtype=torch.float32)  #
 # -----------------------------------------------------------------------
-num_epoch = 10000
+num_epoch = 10000  #10000
 batch_num = 64
 batch_length = 32
 weight = 1.0  # initial state weight in loss function
@@ -144,7 +144,7 @@ X[:, 0] = np.copy(Y_sys[:, 0])
 X[:, 1] = np.copy(v_est[:, 0])
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 
-model = MechanicalSystem_u(dt=dt)
+model = MechanicalSystem_qu(dt=dt)
 # simulator = header.RK4(model=model, dt=dt)
 simulator = ForwardEuler(model=model, dt=dt)
 params_net = list(simulator.model.parameters())
