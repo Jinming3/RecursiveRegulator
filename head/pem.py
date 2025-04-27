@@ -47,13 +47,13 @@ def normalize(x, r=5):
 
 
 class PEM(object):  #
-    def __init__(self, n, t, N, ur=1, m=1, r=1):
+    def __init__(self, n, t, N, ur=1, m=1 ):
         self.n = n  # dim of X
-        self.ur = ur
+        self.ur = ur# dimension of input U
         self.t = t  # dim of Theta
         self.N = N  # total data size
         self.m = m  # dimension of output Y
-        self.r = r  # dimension of input U
+
         self.Thehat_data = np.zeros((self.N, self.t))
         self.Xhat_data = np.zeros((self.N, self.n))  # collect state estimates
         self.Yhat_data = np.zeros(self.N)  # collect prediction
@@ -63,8 +63,8 @@ class PEM(object):  #
         self.Ahat = np.eye(self.n, self.n, 1)  # canonical form
         self.Ahat_old = np.eye(self.n, self.n, 1)
         self.Bhat = np.zeros((self.n, self.ur))
-        self.Chat = np.eye(1, self.n)  # [1, 0]  fixed!
-        self.Chat_old = np.eye(1, self.n)  # [1, 0]
+        self.Chat = np.eye(m, self.n)  # [1, 0]  fixed!
+        self.Chat_old = np.eye(m, self.n)  # [1, 0]
         self.Khat = np.zeros((self.n, self.m))
         self.Khat_old = np.zeros((self.n, self.m))
         self.Y = np.zeros((m, 1))
@@ -88,7 +88,7 @@ class PEM(object):  #
 
     # ------------>>> test >>>>>>---------
 
-    def pem_one(self, Y_sys, U, on):  # dependent funtion !!!!!!! Bhat =n*ur, ur=2, works!
+    def pem_one(self, Y_sys, U, on):  # dependent funtion !!!!!!! Bhat =n*ur, ur>1
         """
         on-off PEM, threshold and slot in parent function!!! when rest, no reading y.
         similar to forward pem
@@ -104,13 +104,9 @@ class PEM(object):  #
             self.Ahat[self.n - 1, a] = self.Thehat[a, 0]
             self.Ahat_old[self.n - 1, a] = self.Thehat_old[a, 0]
         for b in range(self.n):
-            # self.Bhat[b, 0] = self.Thehat[self.n + b, 0]
             for b0 in range(self.ur):
                 self.Bhat[b, b0] = self.Thehat[self.n + b0 + b * self.ur, 0]
-
         for h in range(self.n):
-            # self.Khat[h, 0] = self.Thehat[self.n + self.n + h, 0]
-            # self.Khat_old[h, 0] = self.Thehat_old[self.n + self.n + h, 0]
             self.Khat[h, 0] = self.Thehat[self.n + self.n*self.ur + h, 0]
             self.Khat_old[h, 0] = self.Thehat_old[self.n + self.n*self.ur + h, 0]
         # ---------------PEM iteration-------------------------
@@ -120,12 +116,11 @@ class PEM(object):  #
             for i0 in range(self.n):  # derivative of A
                 self.Xhatdot0[self.n - 1, i0] = self.Xhat_old[i0, 0]
             for i1 in range(self.n):  # of B
-                # self.Xhatdot0[i1, self.n + i1] = self.U_old#[0]
                 for i10 in range(self.ur):
                     self.Xhatdot0[i1, self.n  + i1 * self.ur + i10] = self.U_old[i10]#, 0]
             for i2 in range(self.n):  # of K
-                # self.Xhatdot0[i2, self.n + self.n + i2] = self.Y_old - self.Yhat_old
                 self.Xhatdot0[i2, self.n + self.n*self.ur + i2] = self.Y_old - self.Yhat_old
+
 
             Xhatdot = self.Xhatdot0 + np.dot(self.Ahat_old, self.Xhatdot_old) - np.dot(self.Khat_old[:, [0]],
                                                                                        self.Psi_old2.T)
@@ -136,6 +131,7 @@ class PEM(object):  #
                                          np.dot(Psi_old.T, self.P_old2))
 
             self.Thehat = self.Thehat_old + np.dot(np.dot(P_old, Psi_old), (self.Y - self.Yhat))
+
             # update thehat
             for a in range(self.n):
                 self.Ahat[self.n - 1, a] = self.Thehat[a, 0]
@@ -167,7 +163,7 @@ class PEM(object):  #
             # squared prediction errors
             self.Y_old = np.copy(self.Y)
             self.Yhat_old = np.copy(self.Yhat)
-            self.fix = np.copy(self.Y - self.Yhat)
+            # self.fix = np.copy(self.Y - self.Yhat)
             self.Yhat = np.copy(Yhat_new)
 
         if not on:  # check if to stop # only ssm
@@ -1098,14 +1094,14 @@ class PEM(object):  #
         # self.errors = np.asarray(self.errors)
 
 
-class PEM_mimo:
+class PEM_mimo: # wrong
     """
     MIMO, observer canonical, rearranged matrix, asterisk is 0
     """
 
     def __init__(self, N, n=4, m=2, u=2, r=2):
         self.n = n  # dim of X
-        self.t = n*r + n*u + n*m  # dim of Theta
+        self.t = n*n + n*u + n*m  # dim of Theta
         self.N = N  # total data size
         self.m = m  # dimension of output Y
         self.u = u  # dimension of input U
@@ -1226,6 +1222,159 @@ class PEM_mimo:
 
 
 # ----------- >>> test --------
+ # not tested yet, 2025,04,26
+class PEM_free(object):
+    def __init__(self, n, t, N, ur=1, m=1 ):
+        self.n = n  # dim of X
+        self.ur = ur# dimension of input U
+        self.t = t  # dim of Theta t = n*n+n*ur+n*m+m*n
+        self.N = N  # total data size
+        self.m = m  # dimension of output Y, only try 2
+
+        self.Thehat_data = []
+        self.Xhat_data = np.zeros((self.N, self.n))  # collect state estimates
+        self.Yhat_data = np.zeros(self.N)  # collect prediction
+        self.VN_data = np.zeros(self.N)  # prediction mean squared errors
+        self.Xhat = np.zeros((self.n, 1))
+        self.Ahat  = np.zeros((self.n, self.n))    # free form
+        self.Ahat_old  = np.zeros((self.n, self.n))
+
+        self.Bhat = np.zeros((self.n, self.ur))
+        # self.Chat = np.eye(self.m, self.n)  #   eye?
+        # self.Chat_old = np.eye(self.m, self.n)
+        self.Chat =  np.zeros((self.m, self.n))   # free, can also be eye?
+        self.Chat_old =  np.zeros((self.m, self.n))
+        self.Khat = np.zeros((self.n, self.m))
+        self.Khat_old = np.zeros((self.n, self.m))
+        self.Y = np.zeros((m, 1))
+        self.Y_old = np.zeros((m, 1))
+        self.Yhat = np.zeros((m, 1))
+        self.Yhat_old = np.zeros((m, 1))
+        self.U_old = np.zeros((self.ur, 1))
+        self.Thehat = np.zeros((self.t, 1))
+        self.Thehat_old = np.zeros((self.t, 1))  #* 0.1
+        # self.Thehat_old = np.random.rand(self.t, 1) #* 0.1
+        # --------------------------------------------
+        self.P_old2 = np.eye(t, t)  #*0.09
+        self.Psi_old2 = np.eye(t, m)  #*0.9
+        self.Xhat_old = np.ones((self.n, 1))  #* 0.2  # or np.zeros
+
+        # ---------------------------------------------
+        self.I = np.eye(1)  # np.eye(t, t)#
+        self.Xhatdot0 = np.zeros((self.n, self.t))
+        self.Xhatdot_old = np.zeros((self.n, self.t))
+
+    def pem_one(self, Y_sys, U, on):  # dependent funtion !!!!!!! Bhat =n*ur, ur>1
+        """
+        on-off PEM, threshold and slot in parent function!!! when rest, no reading y.
+        similar to forward pem
+        :param Y_sys: size m (embedded) sequence, system raw measurements
+        :param U: size ur , input raw data
+        :param on: true == iteration updating Thehat
+        :return:
+        """
+
+        self.Yhat = np.dot(self.Chat_old, self.Xhat)
+        # assign theta-hat
+        for a_row in range(self.n):
+            for a in range(self.n):
+                self.Ahat[a_row, a] = self.Thehat[a + a_row*self.n, 0]
+                self.Ahat_old[a_row, a] = self.Thehat_old[a + a_row*self.n, 0]
+        for b in range(self.n):
+            for b0 in range(self.ur):
+                self.Bhat[b, b0] = self.Thehat[self.n * self.n + b0 + b * self.ur, 0]
+        for h in range(self.n):
+            for h1 in range(self.m):
+                self.Khat[h, h1] = self.Thehat[self.n*self.n + self.n * self.ur + h*self.m + h1, 0]
+                self.Khat_old[h, h1] = self.Thehat_old[self.n*self.n + self.n * self.ur + h*self.m + h1, 0]
+        for c in range(self.m):
+            for c1 in range(self.n):
+                self.Chat[c, c1] = self.Thehat[self.n*self.n + self.n * self.ur + self.n *self.m + c*self.n+c1, 0]
+                self.Chat_old[c, c1] = self.Thehat_old[self.n*self.n + self.n * self.ur + self.n *self.m +  c*self.n+c1, 0]
+        # ---------------PEM iteration-------------------------
+
+        if on:
+            self.Y[:] = Y_sys[:]  # read in transmission
+            for i0 in range(self.n):  # derivative of A
+                for i00 in range(self.n):
+                    self.Xhatdot0[i0, i0*self.n+i00] = self.Xhat_old[i00, 0]
+            for i1 in range(self.n):  # of B
+                for i10 in range(self.ur):
+                    self.Xhatdot0[i1, self.n*self.n + i1 * self.ur + i10] = self.U_old[i10]
+            for i2 in range(self.n):  # of K
+                for i20 in range(self.m):
+                    self.Xhatdot0[i2, self.n*self.n + self.n * self.ur + i2*self.m+i20] = self.Y_old[i20] - self.Yhat_old[i20]
+
+            Xhatdot = self.Xhatdot0 + np.dot(self.Ahat_old, self.Xhatdot_old) - np.dot(self.Khat_old, self.Psi_old2.T)  # [:, [0]]
+
+
+            dC = np.zeros((self.m, self.t))
+            for i3 in range(self.m):
+                for i30 in range(self.n): # parameter from C
+                    dC[i3, self.n*self.n + self.n * self.ur +self.n*self.m+i3*self.m +i30] =self.Xhat[i30, 0]
+
+            Psi_old = np.dot(self.Chat_old, Xhatdot).T+dC.T
+            J = self.I + np.dot(np.dot(Psi_old.T, self.P_old2), Psi_old)
+
+            P_old = self.P_old2 - np.dot(np.dot(np.dot(self.P_old2, Psi_old), np.linalg.pinv(J)),  # pinv
+                                         np.dot(Psi_old.T, self.P_old2))
+
+            self.Thehat = self.Thehat_old + np.dot(np.dot(P_old, Psi_old), (self.Y - self.Yhat))
+            self.Thehat_data.append(self.Thehat[:, 0])
+
+            # update thehat
+            for a_row in range(self.n):
+                for a in range(self.n):
+                    self.Ahat[a_row, a] = self.Thehat[a + a_row * self.n, 0]
+            for b in range(self.n):
+                for b0 in range(self.ur):
+                    self.Bhat[b, b0] = self.Thehat[self.n * self.n + b0 + b * self.ur, 0]
+            for h in range(self.n):
+                for h1 in range(self.m):
+                    self.Khat[h, h1] = self.Thehat[self.n * self.n + self.n * self.ur + h * self.m + h1, 0]
+            for c in range(self.m):
+                for c1 in range(self.n):
+                    self.Chat[c, c1] = self.Thehat[
+                        self.n * self.n + self.n * self.ur + self.n * self.m + c * self.n + c1, 0]
+
+            # Xhat_new = np.dot(self.Ahat, self.Xhat) + self.Bhat * U + self.Khat * (self.Y - self.Yhat)  # single input u
+            if len(U.shape) == 1:
+                U = U.reshape(-1, 1)
+            Xhat_new = np.dot(self.Ahat, self.Xhat) + np.dot(self.Bhat, U) + self.Khat @ (self.Y - self.Yhat)
+            Yhat_new = np.dot(self.Chat, Xhat_new)
+            # update every parameter which is time-variant
+            self.Xhat_old = np.copy(self.Xhat)
+            self.Xhat = np.copy(Xhat_new)  ## wrong comment
+            self.Ahat_old = np.copy(self.Ahat)
+            self.Khat_old = np.copy(self.Khat)
+            self.Chat_old = np.copy(self.Chat)
+            self.Xhatdot_old = np.copy(Xhatdot)
+            self.Psi_old2 = np.copy(Psi_old)
+            self.U_old = np.copy(U)
+            self.Thehat_old = np.copy(self.Thehat)
+            self.P_old2 = np.copy(P_old)
+            # squared prediction errors
+            self.Y_old = np.copy(self.Y)
+            self.Yhat_old = np.copy(self.Yhat)
+            self.Yhat = np.copy(Yhat_new)
+
+        if not on:  # check if to stop # only ssm
+            if len(U.shape) == 1:
+                U = U.reshape(-1, 1)
+
+            Xhat_new = np.dot(self.Ahat, self.Xhat) + np.dot(self.Bhat, U)
+            Yhat_new = np.dot(self.Chat, Xhat_new)
+            self.Xhat_old = np.copy(self.Xhat)
+            self.Xhat = np.copy(Xhat_new)
+            self.U_old = np.copy(U)
+            self.Y_old = np.copy(self.Y)
+            self.Yhat_old = np.copy(self.Yhat)
+            self.Yhat = np.copy(Yhat_new)
+
+
+
+
+
 
 class PEM_full:  # not good, use canonical
     def __init__(self, n, t, N):
