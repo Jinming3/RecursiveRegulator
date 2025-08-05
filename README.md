@@ -8,14 +8,6 @@ https://doi.org/10.1038/s44172-025-00477-4
 
 Language: Python 3.12
 
-numpy 
-
-torch 
-
-matplotlib
-
-scipy
-
 # Folders
 
 ### RecursiveRegulator
