@@ -1,6 +1,3 @@
-""""
-
-"""
 
 import matplotlib
 matplotlib.use('TKAgg')
@@ -9,7 +6,7 @@ import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-plt.style.use('F:/Project/head/tight.mplstyle')
+
 import matplotlib.pylab as pylab
 pylab.rcParams['font.family'] = "Times New Roman"
 import os
@@ -19,7 +16,7 @@ import time
 from scipy import signal
 
 import header
-from pem import PEM  # _step as PEM
+from pem import PEM  
 from pem import normalize, R2
 from header import NeuralStateSpaceModel_qu, ForwardEulerPEM, ForwardEuler
 
@@ -35,16 +32,11 @@ params = {
           }
 pylab.rcParams.update(params)
 
-# df_data = pd.read_csv("F:/Project/DATA/RLC/RLC_data_test.csv")
-# Y_sys = np.array(df_data[['V_C']]).astype(np.float32)
-# time_exp = np.array(df_data['time']).astype(np.float32)
-# dt = time_exp[1] - time_exp[0]
-# U = np.array(df_data[['V_IN']]).astype(np.float32)
-# X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
+
 system = 'RLC_aging_i_qb'
 np.random.seed(7)
 torch.manual_seed(0)
-# -------
+
 def inductance(il, L0):
     out = L0 * (0.9 * (1 / math.pi * np.arctan(-5 * (np.abs(il) - 5)) + 0.5) + 0.1)
     return out
@@ -76,10 +68,6 @@ class rlc:
 
         output = self.vc
         return output
-
-
-
-
 
 
 # # ------
@@ -134,7 +122,7 @@ bandwidth= 350e2 #150e3
 std_devi = 60
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[0], changing[1]):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1e-1)  # 1     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3, noise_process=1e-1)  
     Y_sys.append(Y)
     U.append(circuit.u)
 
@@ -168,8 +156,6 @@ U = U[:, np.newaxis]
 
 
 
-
-
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
 
@@ -195,8 +181,8 @@ threshold2 = 1#0.98  # stop retrain
 
 
 
-update = 12010#12#11  # 1
-ur=65#2
+update = 12010
+ur=65
 
 off = 0#int(2* 10**(-3)/ ts ) #total 3ms = 3000us0#
 n = 2
@@ -210,9 +196,7 @@ factor.Thehat_old = np.random.rand(t, 1) * 1e-2#4 #4  8
 factor.Xhat_old = np.zeros((n, 1))
 
 
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train=off) #optimizer=optimizer,
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
-
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train=off) 
 
 
 # x_fit = np.zeros((1, n_x), dtype=np.float32)
@@ -247,12 +231,6 @@ yhat = xhat_data[:, 0]
 # print(f'update at {correction}')
 # print(f'stop at {stop}')
 
-# # ->>>---- update == False, optimization outside NN loop, soo faster than stepwise --
-# yhat_stable = xhat_data[:, 0]
-# factor.forward(y, yhat_stable)
-# yhat = factor.Yhat_data
-# Thehat = factor.Thehat_data
-# ------ <<<--------------------------------------
 print("nn R^2 = ", R2(Y_sys[:, 0], yhat0))
 
 print("inference evolution R^2 = ", R2(Y_sys[:, 0], yhat))
@@ -278,11 +256,7 @@ ax[1].set_ylabel("(b)")
 ax[1].legend()
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))
 ax[1].set_xlabel('Time($\mu s$)')
-# ax[2].plot(time_exp, U[:, 0, 0], 'k', label='u')
-# ax[2].set_ylabel("(c)")
-# ax[2].set_xlabel('time($\mu s$)')
-# ax[2].legend()
-# ax[2].legend(loc=4)
+
 
 
 
