@@ -9,8 +9,8 @@ matplotlib.use("TkAgg")
 import os
 import sys
 import math
-from header import R2, normalize, ForwardEuler  # not from head folder but local
-from header import MechanicalSystem_qu #as MechanicalSystem_u   #
+from header import R2, normalize, ForwardEuler  
+from header import MechanicalSystem_qu 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 system = 'update_qku_b'
@@ -66,8 +66,6 @@ satu = 10  # saturation
 dt = 0.005
 time_all = np.array([15])# 20seconds  10
 
-# dt=0.3
-# time_all = np.array([1000])
 
 sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
 
@@ -76,19 +74,7 @@ U = []
 
 p_ref = sinwave(dt, time_all)
 sig = 'sinwave'
-# ------------------- real ref --------------
-# df = pd.read_csv("/home/jsun/SUN/Project/DATA/EMPS/control_EMPS.csv")
-# time_exp = np.array(df['t']).astype(np.float32)
-# p_ref0 = np.array(df['p_ref']).astype(np.float32)
-# p_ref1 = np.array(df['p_ref1']).astype(np.float32)
-# pulse = np.array(df['pulse'])
-# p_ref = []
-# dt = 0.005
-# for k in range(0, len(time_exp)):
-#     if k % 5 == 0:
-#         p_ref.append(p_ref0[k])
 
-# ----------------------------------------------------
 simu = 'train'
 # simu = 'noise'
 noise = 0
@@ -128,7 +114,7 @@ def vel(pos):
 v_est = vel(Y_sys)
 dt = torch.tensor(dt , dtype=torch.float32)  #
 # -----------------------------------------------------------------------
-num_epoch = 10000  #10000
+num_epoch = 10000  
 batch_num = 64
 batch_length = 32
 weight = 1.0  # initial state weight in loss function
