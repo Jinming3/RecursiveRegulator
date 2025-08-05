@@ -1,4 +1,6 @@
-
+"""
+compare RR and narmax on online adaptation
+"""
 import matplotlib
 matplotlib.use("TkAgg")
 import pandas as pd
