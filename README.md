@@ -17,7 +17,7 @@ The method's functions are in file "header" and "pem".
 
 In folder RecursiveRegulator, there are system examples ready to run.
 
-'update_{system}.py' generates varying system data to test the recursive regulator for adapting trained model. For example, update_EMPS.py, it will produce images to show the regulator's performance in different system conditions.
+'update_{system}.py' generates varying system data to test the recursive regulator for adapting trained model. For example, update_EMPS.py, will produce images to show the regulator's performance in different system conditions.
 
 If a nonlinear model doesn't exist when run "update.py", 'train_{system}.py' is to train and save nonlinear model under static condition into folder "models".
 
