@@ -18,4 +18,4 @@ If a nonlinear model doesn't exist, 'train_{system}.py' is to train and save non
 
 'update_{system}.py' uses varying system data to test the recursive regulator for adapting trained model, e.g., update_EMPS.py. It will produce images to show the regulator's performance in different system conditions.
 
-The function path may problem, please check the path.
+
