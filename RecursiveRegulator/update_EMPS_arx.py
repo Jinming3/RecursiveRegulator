@@ -1,5 +1,5 @@
 """
-compare RR and narmax on online adaptation
+compare RR and narmax for online adaptation
 """
 import matplotlib
 matplotlib.use("TkAgg")
