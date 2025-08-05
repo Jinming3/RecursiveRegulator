@@ -8,14 +8,18 @@ https://doi.org/10.1038/s44172-025-00477-4
 
 Language: Python 3.11
 
-# Folders
+# Method and demonstrate 
+### Design
 
-### RecursiveRegulator
+The method's functions are in file "header" and "pem".
 
-System examples ready to run.
+### Data and demonstrate 
 
-If a nonlinear model doesn't exist, 'train_{system}.py' is to train and save nonlinear model under static condition into folder "models".
+In folder RecursiveRegulator, there are system examples ready to run.
 
-'update_{system}.py' uses varying system data to test the recursive regulator for adapting trained model, e.g., update_EMPS.py. It will produce images to show the regulator's performance in different system conditions.
+'update_{system}.py' generates varying system data to test the recursive regulator for adapting trained model. For example, update_EMPS.py, it will produce images to show the regulator's performance in different system conditions.
+
+If a nonlinear model doesn't exist when run "update.py", 'train_{system}.py' is to train and save nonlinear model under static condition into folder "models".
+
 
 
