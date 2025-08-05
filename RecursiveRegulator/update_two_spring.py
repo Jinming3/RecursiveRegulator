@@ -5,7 +5,6 @@ import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-plt.style.use('F:/Project/head/tight.mplstyle')
 
 import matplotlib.pylab as pylab
 pylab.rcParams['font.family'] = "Times New Roman"
@@ -15,7 +14,7 @@ import math
 import time
 
 import header
-from pem import PEM  # _step as PEM
+from pem import PEM  
 from pem import normalize, R2
 from header import MechanicalSystem_qu, ForwardEulerPEM, ForwardEuler
 os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
@@ -91,8 +90,6 @@ time_exp = np.arange(N) * dt
 changing = np.array([20, 40, 55, 70, 100, 125]) / dt
 # changing = np.array([90]) / dt # time_all
 changing = changing.astype(int)
-
-
 
 
 sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
@@ -242,13 +239,12 @@ factor.P_old2 *= 1
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
 factor.Thehat_old = np.random.rand(t, 1) * 0.01
-# print('seed=', np.random.get_state()[1][0])#
+
 factor.Xhat_old = np.zeros((n, 1))
 update = 12010
 off = 0#int(80/dt)
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=0, threshold1=threshold1, threshold2=threshold2)
-simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train = off) #optimizer=optimizer,
-# simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, optimizer=optimizer, update=5, threshold1=threshold1, threshold2=threshold2)
+
+simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train = off) 
 
 
 # x_fit = np.zeros((1, n_x), dtype=np.float32)
@@ -286,16 +282,7 @@ yhat = xhat_data[:, 0]
 # print(f'update at {correction}')
 # print(f'stop at {stop}')
 
-# # ->>>---- update == False, optimization outside NN loop, soo faster than stepwise --
-# yhat_stable = xhat_data[:, 0]
-# factor.forward(y, yhat_stable)
-# yhat = factor.Yhat_data
-# Thehat = factor.Thehat_data
-# ------ <<<--------------------------------------
 
-# np.savetxt('yhat0_two_spring.txt', yhat)
-
-# yhat0 = np.loadtxt('yhat0_two_spring.txt')
 print("nn R^2 = ", R2(Y_sys, yhat0))
 print("inference evolution R^2 = ", R2(Y_sys, yhat))
 
@@ -307,7 +294,7 @@ ax[0].set_ylabel("(a)")
 ax[0].legend(loc=4)
 ax[1].plot(time_exp, Y_sys, 'g', label='$y$')
 ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
-# ax[0].plot(time_exp, simulator.y_pem, 'y--')
+
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 if off!=0:
     ax[1].plot(time_exp[off], Y_sys[off], 'bx')
@@ -315,69 +302,6 @@ if off!=0:
 ax[1].set_ylabel("(b)")
 ax[1].legend(loc=4)
 ax[1].set_xlabel('Time(s)')
-# ax[2].plot(time_exp, U, 'k', label='$u$')
-# # ax[2].plot(time_exp[changing], U[changing], 'kx', label='changing')
-# ax[2].set_ylabel("(c)")
-# ax[2].set_xlabel('Time(s)')
-# ax[2].legend(loc=4)
 
-#
-# # #
-# fig, ax = plt.subplots(6, 1, sharex=True)
-# ax[0].plot(time_exp, Thehat[:, 0], 'g', label='a0')
-# ax[0].plot(time_exp[changing], Thehat[changing, 0], 'kx')
-# # ax[0].plot(time_exp[correction], Thehat[correction, 0], 'yx')
-# # ax[0].plot(time_exp[stop], Thehat[stop, 0], 'mx')
-# ax[0].legend()
-# ax[1].plot(time_exp, Thehat[:, 1], 'g', label='a1')
-# # ax[1].plot(time_exp[changing], Thehat[changing, 1], 'kx')
-# ax[1].legend()
-# ax[2].plot(time_exp, Thehat[:, 2], 'b', label='b0')
-# # ax[2].plot(time_exp[changing], Thehat[changing, 2], 'kx')
-# ax[2].legend()
-# ax[3].plot(time_exp, Thehat[:, 3], 'b', label='b1')
-# # ax[3].plot(time_exp[changing], Thehat[changing, 3], 'kx')
-# ax[3].legend()
-# ax[4].plot(time_exp, Thehat[:, 4], 'k', label='k0')
-# # ax[4].plot(time_exp[changing], Thehat[changing, 4], 'kx')
-# ax[4].legend()
-# ax[5].plot(time_exp, Thehat[:, 5], 'k', label='k1')
-# # ax[5].plot(time_exp[changing], Thehat[changing, 5], 'kx')
-#
-# ax[5].set_xlabel('Time(s)')
-# ax[5].legend()
-# # ----------- degenerating physical parameters --------
-# fig, ax = plt.subplots(6, 1, sharex=True)
-# ax[0].plot(m1_all, 'k', label='m1')
-# ax[0].legend()
-# ax[1].plot(m2_all, 'k', label='m2')
-# ax[1].legend()
-# ax[2].plot(k1_all, 'k', label='k1')
-# ax[2].legend()
-# ax[3].plot(k2_all, 'k', label='k2')
-# ax[3].legend()
-# ax[4].plot(d1_all, 'k', label='d1')
-# ax[4].legend()
-# ax[5].plot(d2_all, 'k', label='d2')
-# ax[5].legend()
-# plt.figure()
-# plt.plot(time_exp, simulator.y_pem, label='y_{pem}')
-# # plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
-# # plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
-# plt.xlabel('Time')
 
-# simulator.y_pem = np.array(simulator.y_pem)
-# simulator.y_pem0 = np.array(simulator.y_pem0)
-# ts = 0.05
-# plt.figure()
-# plt.plot(time_exp, simulator.y_pem, 'r', label='$\hat{y}_{pem}$')
-# plt.plot(time_exp, simulator.y_pem0, 'g', label='$\hat{y}_{pem0}$')
-# plt.plot(simulator.y_pem[:, 1]*ts, simulator.y_pem[:, 0], 'r', label='$\hat{y}_{pem}$')  #
-# plt.plot(simulator.y_pem0[:, 1]*ts, simulator.y_pem0[:, 0], 'g', label='PEM resting')
-# plt.plot(simulator.y_pem[:, 0], 'r-', label='$\hat{y}_{pem}$')
-# plt.plot(simulator.y_pem0[:, 0], 'g-', label='$\hat{y}_{pem}0$')
-# plt.plot(time_exp[correction], simulator.y_pem[correction], 'yx')
-# plt.plot(time_exp[stop], simulator.y_pem[stop], 'mx')
-# plt.xlabel('Time(s)')
-# plt.legend()
-# plt.show()
+
