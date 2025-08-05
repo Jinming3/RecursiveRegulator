@@ -1,12 +1,9 @@
-""""
 
-"""
 import matplotlib
 import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-plt.style.use('F:/Project/head/tight.mplstyle')
 
 import matplotlib.pylab as pylab
 pylab.rcParams['font.family'] = "Times New Roman"#'sans-serif'
@@ -34,25 +31,8 @@ params = {
 pylab.rcParams.update(params)
 
 
-
 system = 'update_qku_b'
 
-# params = {
-#     # 'figure.figsize': (4.8, 3.7),
-#     'axes.labelsize': 11,
-#     'axes.labelpad': 0.5,
-#     'xtick.labelsize': 11,
-#     'ytick.labelsize': 11,
-#     'legend.fontsize': 11,
-#     'legend.labelspacing': 0.1,
-#     'legend.borderpad': 0.2,
-#     'legend.borderaxespad': 0.25,
-#     'legend.handletextpad': 0.3,
-#     'legend.handlelength': 1,
-#     'legend.loc': 'lower right',
-#
-# }
-# pylab.rcParams.update(params)
 
 
 # -- sin/cos wave ---
@@ -220,23 +200,21 @@ threshold1 = 1 #0.90  # start retrain, R2
 threshold2 = 1  # stop retrain
 # threshold2 = 0.97  # stop retrain
 n=2
-ur = 65#64
+ur = 65
 t = n +n*ur + n
 factor = PEM(n, t, N, ur=ur)
 # factor.P_old2 *= 0.09
-factor.P_old2 *= 9e-2 #4 #0.0009
+factor.P_old2 *= 9e-2 
 
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
 
 # factor.Thehat_old = np.random.rand(t, 1) * 0.01
-factor.Thehat_old = np.random.rand(t, 1) * 1e-2#4#10#7#10 #4  8
+factor.Thehat_old = np.random.rand(t, 1) * 1e-2
 
-# print('seed=', np.random.get_state()[1][0])#
 # factor.Xhat_old = np.array([[2], [0]])
 factor.Xhat_old = np.zeros((n, 1))
-# update = 5 # original update
-# update = 9 # add pem fix
+
 update = 12010 # q size == hidden, inside koopman space
 off = 0#int(35/dt)
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, update=update,
@@ -252,20 +230,7 @@ simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N, update=updat
 start_time = time.time()
 xhat_data = simulator(x0, u, y)
 print(f"\nTrain time: {time.time() - start_time:.2f}")
-# ----- optimization inside NN loop, stepwise --------
-yhat = xhat_data[:, 0]
-# Thehat = simulator.Thehat
-# stop = simulator.stop
-# correction = simulator.correction
-# print(f'update at {correction}')
-# print(f'stop at {stop}')
 
-# # ->>>---- update == False, optimization outside NN loop, soo faster than stepwise --
-# yhat_stable = xhat_data[:, 0]
-# factor.forward(y, yhat_stable)
-# yhat = factor.Yhat_data
-# Thehat = factor.Thehat_data
-# ------ <<<--------------------------------------
 def fit_index(y_true, y_pred, time_axis=0):
     """ Computes the per-channel fit index.
 
@@ -385,19 +350,14 @@ ax[3].set_xlabel('Time(s)')
 # plt.plot(simulator.r2, 'r', label='$R^2$')  # time_exp,
 # plt.xlabel('time(s)')
 # plt.legend()
-#
-# plt.figure()
-# plt.plot(np.abs(simulator.err), 'r', label='$error$')  # time_exp,
-# plt.xlabel('time(s)')
-# plt.legend()
-# plt.show()
+
 
 # yhat_dynonet12 = np.loadtxt('yhat_dynonet12.txt', dtype=np.float32)
 # yhat_dynonet2 = np.loadtxt('yhat_dynonet2.txt', dtype=np.float32)
 # yhat_edmdc = np.loadtxt('yhat_edmdc.txt', dtype=np.float32)
 # yhat_edmdc_online = np.loadtxt('yhat_edmdc_online.txt', dtype=np.float32)
 # # print('R2 dynonet= ', R2(Y_sys, yhat_dynonet12))
-#
+
 # fig, ax = plt.subplots(1, 1, sharex=True,  tight_layout=True, figsize=(9, 6))  #
 # ax.plot(time_exp, Y_sys, 'k', label='$y$')
 # ax.plot(time_exp, yhat, 'r--', label='$\hat{y}$')
