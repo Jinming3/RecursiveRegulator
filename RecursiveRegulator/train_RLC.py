@@ -1,6 +1,4 @@
-""""
 
-"""
 import pandas as pd
 import numpy as np
 import torch
@@ -28,12 +26,6 @@ params = {
 }
 pylab.rcParams.update(params)
 
-# df_data = pd.read_csv("F:/Project/DATA/RLC/RLC_data_id.csv")
-# Y_sys = np.array(df_data[['V_C']]).astype(np.float32)
-# time_exp = np.array(df_data['time']).astype(np.float32)
-# dt = time_exp[1] - time_exp[0]
-# U = np.array(df_data[['V_IN']]).astype(np.float32)
-# X = np.array(df_data[['V_C', 'I_L']]).astype(np.float32)
 
 # np.random.seed(3)
 # torch.manual_seed(3407)
