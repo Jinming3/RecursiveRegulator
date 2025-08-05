@@ -1,6 +1,8 @@
 The methods "Recursive Regulator" focuses on nonlinear systems modeling and real-time model adaptation.
+
 Related article>>
 Recursive regulator: a deep-learning and real-time model adaptation strategy for nonlinear systems.
+
 https://doi.org/10.1038/s44172-025-00477-4
 
 
