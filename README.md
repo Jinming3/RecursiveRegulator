@@ -6,7 +6,7 @@ https://doi.org/10.1038/s44172-025-00477-4
 
 # Installation requirements:
 
-Language: Python 3.12
+Language: Python 3.11
 
 # Folders
 
