@@ -357,13 +357,6 @@ class ForwardEulerPEM(nn.Module):
             #     
             #     q = q + 1
 
-
-
-
-            
-
-
-
         return self.xhat_data
 
 
