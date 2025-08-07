@@ -1,4 +1,6 @@
-
+"""
+train NN model under original static condition, offline
+"""
 import pandas as pd
 import numpy as np
 import torch
@@ -57,15 +59,10 @@ gt, kp, kv = 35.15, 160.18, 243.45
 M, Fv = 95.1089, 203.5034
 Fc, offset = 20.3935, -3.1648
 satu = 10  # saturation
-# Fc, offset = 0, 0  # remove nonlinear part
-# satu = 100  # saturation
-# # -------------------------------------------------
-# # ------- time-invariant system -----
 
 
 dt = 0.005
-time_all = np.array([15])# 20seconds  10
-
+time_all = np.array([15])
 
 sampling = EMPS(dt, pos=0, vel=0, acc=0, u=0)
 
@@ -82,7 +79,7 @@ if simu == 'train':
     noise = 0
 if simu == 'noise':
     noise = 0.01
-#
+
 for i in p_ref:  # no noise for training, noise for test
     p_control = i
     y = sampling.measure(p_control, noise * 10, noise)
@@ -91,15 +88,11 @@ for i in p_ref:  # no noise for training, noise for test
 # np.savetxt('data_Y.txt', Y_sys, delimiter=',')
 # np.savetxt('data_U.txt', U, delimiter=',')
 
-
 Y_sys = np.array(Y_sys, dtype=np.float32)
 U = np.array(U, dtype=np.float32)
 
-
 Y_sys = Y_sys[:, np.newaxis]
 U = U[:, np.newaxis]
-
-
 
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
@@ -110,9 +103,8 @@ def vel(pos):
     v_est = v_est.reshape(-1, 1) / dt
     return v_est
 
-
 v_est = vel(Y_sys)
-dt = torch.tensor(dt , dtype=torch.float32)  #
+dt = torch.tensor(dt , dtype=torch.float32)  
 # -----------------------------------------------------------------------
 num_epoch = 10000  
 batch_num = 64
@@ -140,7 +132,6 @@ optimizer = torch.optim.Adam([
     {'params': params_initial, 'lr': lr}
 ], lr=lr*10)
 
-
 def get_batch(batch_num=batch_num, batch_length=batch_length):
     batch_start = np.random.choice(np.arange(N - batch_length, dtype=np.int64), batch_num, replace=False)
     batch_index = batch_start[:, np.newaxis] + np.arange(batch_length)  # batch sample index
@@ -150,7 +141,6 @@ def get_batch(batch_num=batch_num, batch_length=batch_length):
     batch_u = torch.tensor(U[batch_index, :])
     batch_y = torch.tensor(Y_sys[batch_index])
     return batch_x0, batch_x, batch_u, batch_y
-
 
 # compute initial error as scale.
 with torch.no_grad():
@@ -214,7 +204,6 @@ ax.plot(LOSS, label='loss_total')
 ax.grid(True)
 ax.set_xlabel("Iteration")
 plt.legend()
-
 
 # initial state estimate
 x0_vali = x_fit[0, :].detach().numpy()
