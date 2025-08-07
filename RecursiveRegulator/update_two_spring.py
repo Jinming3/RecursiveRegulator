@@ -1,18 +1,14 @@
-
 import matplotlib
-
 import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-
 import matplotlib.pylab as pylab
 pylab.rcParams['font.family'] = "Times New Roman"
 import os
 import sys
 import math
 import time
-
 import header
 from pem import PEM  
 from pem import normalize, R2
@@ -21,25 +17,9 @@ os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 
 #   ---- motion----
-def sinwave(dt, i, w, A): #=0.1,=1.0
-    # out = []
-
-    # for k in range(int(time / dt)):
-    # x = A * np.cos(w * i * math.pi * dt)
+def sinwave(dt, i, w, A): 
     x = A * np.sin(w*i * math.pi* dt)
-    # out.append(x)
     return x
-
-
-# -- tri wave ---
-# def triangle(dt, i, A):  # , time_all
-#     out = []
-#     p = 8
-#     # for k in range(int(time_all / dt)):
-#     #     x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
-#     x = A* np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
-#     # out.append(x)
-#     return x
 
 
 class Motion:
@@ -86,16 +66,14 @@ time_all = 150
 dt = 0.05
 N = int(time_all / dt)
 time_exp = np.arange(N) * dt
-# changing = np.array([20, 50]) / dt
 changing = np.array([20, 40, 55, 70, 100, 125]) / dt
-# changing = np.array([90]) / dt # time_all
 changing = changing.astype(int)
 
 
 sampling = Motion(dt, pos1=0, pos2=0, vel1=0, vel2=0, acc1=0, acc2=0)
 scale = 1e-3
 for i in range(changing[0]): # original condition with noise
-    y = sampling.measure(ref=sinwave(dt=dt, i=i, w=0.5, A=3), noise_process=scale*1e-5 , noise_measure=scale*1e-8) #2 1e-5  1e-8
+    y = sampling.measure(ref=sinwave(dt=dt, i=i, w=0.5, A=3), noise_process=scale*1e-5 , noise_measure=scale*1e-8) 
     Y_sys.append(y)
     U.append(sampling.u)
     m1_all.append(m1)
@@ -156,7 +134,6 @@ for i in range(changing[2], changing[3]):
 # d1 = d1 * 0.9
 # d2 = d2 * 0.9
 
-
 for i in range(changing[3], changing[4]):
     y = sampling.measure(ref=sinwave(dt, i, 1/2, 0.6)+sinwave(dt, i, 1/3, 0.4), noise_process=scale*0.1, noise_measure=scale*0.001)
     Y_sys.append(y)
@@ -214,7 +191,7 @@ lr = 0.0001  # not used in PEM updateing
 system = 'two_spring_motion5_8_qb'
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = MechanicalSystem_qu(dt=dt)  #
+model = MechanicalSystem_qu(dt=dt) 
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
 # model.eval()
@@ -224,9 +201,7 @@ optimizer = torch.optim.Adam([
     {'params': [x_fit], 'lr': lr}
 ], lr=lr * 10)
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
-
-
+model.load_state_dict(checkpoint['model_state_dict'], strict=False)  
 
 
 threshold1 = 1#0.97  # start retrain, R2
@@ -242,22 +217,15 @@ factor.Thehat_old = np.random.rand(t, 1) * 0.01
 
 factor.Xhat_old = np.zeros((n, 1))
 update = 12010
-off = 0#int(80/dt)
+off = 0 
 
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=dt, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train = off) 
 
 
-# x_fit = np.zeros((1, n_x), dtype=np.float32)
-# x_fit[0, 0] = np.copy(Y_sys[0, 0])
-# x_fit[0, 1] = 0
-# x_step = x0
-# x0 = torch.tensor(x_fit[[0], :], dtype=torch.float32)
-
 x0 = x_fit[[0], :].detach()
 
-u = torch.tensor(U[:, None, :])  # [:, None, :]
+u = torch.tensor(U[:, None, :])  
 y = Y_sys[:, np.newaxis]
-
 
 simulator0 = ForwardEuler(model=model, dt=dt)
 start_time = time.time()
@@ -266,21 +234,15 @@ with torch.no_grad():
     xhat0 = xhat0.detach().numpy()
     xhat0 = xhat0.squeeze(1)
     yhat0 = xhat0[:, 0]
-    # yhat0=yhat0[:, None]
+   
 print(f"\n NN  time: {time.time() - start_time:.2f}")
-
 
 
 start_time = time.time()
 xhat_data = simulator(x0, u, y)
 print(f"\nTrain time: {time.time() - start_time:.2f}")
-# ----- optimization inside NN loop, stepwise --------
+
 yhat = xhat_data[:, 0]
-# Thehat = simulator.Thehat
-# stop = simulator.stop
-# correction = simulator.correction
-# print(f'update at {correction}')
-# print(f'stop at {stop}')
 
 
 print("nn R^2 = ", R2(Y_sys, yhat0))
@@ -298,10 +260,9 @@ ax[1].plot(time_exp, yhat, 'r--', label='$\hat{y}$')
 ax[1].plot(time_exp[changing], Y_sys[changing], 'kx')
 if off!=0:
     ax[1].plot(time_exp[off], Y_sys[off], 'bx')
-# ax[1].plot(time_exp[off], Y_sys[off], 'bx')
+
 ax[1].set_ylabel("(b)")
 ax[1].legend(loc=4)
 ax[1].set_xlabel('Time(s)')
-
 
 
