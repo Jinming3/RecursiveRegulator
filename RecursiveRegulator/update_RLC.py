@@ -1,12 +1,9 @@
-
 import matplotlib
 matplotlib.use('TKAgg')
-
 import pandas as pd
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-
 import matplotlib.pylab as pylab
 pylab.rcParams['font.family'] = "Times New Roman"
 import os
@@ -14,7 +11,6 @@ import sys
 import math
 import time
 from scipy import signal
-
 import header
 from pem import PEM  
 from pem import normalize, R2
@@ -92,8 +88,7 @@ ts=0.5*10**(-6)
 time_all = 3 *10**(-3)  # ms
 N = int(time_all/ts)
 
-
-dt = torch.tensor(ts, dtype=torch.float32)  #
+dt = torch.tensor(ts, dtype=torch.float32)  
 Y_sys = []
 U = []
 circuit = rlc(vc=0, il=0, dvc=0, dil=0, dt=dt)
@@ -105,20 +100,20 @@ changing = changing.astype(int)
 # ----------------------------------
 L0=50*10**(-6)
 C = 270 * 10 ** (-9)  #capacitor
-R=3 #resistor 5 #
+R=3 #resistor 
 bandwidth= 300e2
 std_devi = 80
 v_in = white(bandwidth, time_all, std_devi, dt)
 
 for i in range(changing[0]): # original condition with noise
-    Y = circuit.get_y(v_in[i], noise_measure= 1e-8, noise_process=1e-7)  # 1e-3    1
+    Y = circuit.get_y(v_in[i], noise_measure= 1e-8, noise_process=1e-7)  
     Y_sys.append(Y)
     U.append(circuit.u)
 # -------------------------------------------------------------------------------
 L0=40*10**(-6)
 C = 170 * 10 ** (-9)  #capacitor
-R=7 #3 #resistor
-bandwidth= 350e2 #150e3
+R=7 
+bandwidth= 350e2 
 std_devi = 60
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[0], changing[1]):
@@ -128,33 +123,30 @@ for i in range(changing[0], changing[1]):
 
 L0=30*10**(-6)
 C = 100 * 10 ** (-9)  #capacitor
-R=14 #3 #resistor
-bandwidth= 100e2 #150e3
+R=14 #resistor
+bandwidth= 100e2 
 std_devi = 70
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[1], changing[2]):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-4, noise_process=1e-2)  #
+    Y = circuit.get_y(v_in[i], noise_measure=1e-4, noise_process=1e-2) 
     Y_sys.append(Y)
     U.append(circuit.u)
 
 L0=20*10**(-6)
 C = 70 * 10 ** (-9)  #capacitor
-R=17 #3 #resistor
-bandwidth= 200e2 #150e3
+R=17 #resistor
+bandwidth= 200e2 
 std_devi = 30
 v_in = white(bandwidth, time_all, std_devi, dt)
 for i in range(changing[2], N):
-    Y = circuit.get_y(v_in[i], noise_measure=1e-3 , noise_process=1)  # 1e-3     1
+    Y = circuit.get_y(v_in[i], noise_measure=1e-3 , noise_process=1)  
     Y_sys.append(Y)
     U.append(circuit.u)
 # np.savetxt('data_rlc_Y_change.txt', Y_sys, delimiter=',')
 # np.savetxt('data_rlc_U_change.txt', U, delimiter=',')
 Y_sys = np.reshape(Y_sys, (-1, 1)).astype(np.float32)
 U = np.reshape(U, (-1, 1)).astype(np.float32)
-
 U = U[:, np.newaxis]
-
-
 
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
@@ -163,7 +155,7 @@ lr = 0.001  # not used in PEM updateing
 
 model_filename = f"{system}"
 initial_filename = f"{system}_initial"
-model = NeuralStateSpaceModel_qu()  #
+model = NeuralStateSpaceModel_qu()  
 x_fit = torch.load(os.path.join("models", initial_filename))
 checkpoint = torch.load(os.path.join("models", model_filename))
 model.eval()
@@ -173,43 +165,30 @@ optimizer = torch.optim.Adam([
     {'params': [x_fit], 'lr': lr}
 ], lr=lr * 10)
 optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-model.load_state_dict(checkpoint['model_state_dict'], strict=False)  # , strict=False
-
+model.load_state_dict(checkpoint['model_state_dict'], strict=False)  
 
 threshold1 = 1#0.96  # start retrain, R2
 threshold2 = 1#0.98  # stop retrain
 
-
-
 update = 12010
 ur=65
 
-off = 0#int(2* 10**(-3)/ ts ) #total 3ms = 3000us0#
+off = 0 #int(2* 10**(-3)/ ts ) #total 3ms = 3000us
 n = 2
 t = n +n*ur + n
 factor = PEM(n, t, N, ur=ur)
-
-factor.P_old2 *= 9e-1#1#3 #4
+factor.P_old2 *= 9e-1
 factor.Psi_old2 *= 0.9
 np.random.seed(3)
-factor.Thehat_old = np.random.rand(t, 1) * 1e-2#4 #4  8
+factor.Thehat_old = np.random.rand(t, 1) * 1e-2
 factor.Xhat_old = np.zeros((n, 1))
-
 
 simulator = ForwardEulerPEM(model=model, factor=factor, dt=1, N=N,  update=update,threshold1=threshold1, threshold2=threshold2, train=off) 
 
-
-# x_fit = np.zeros((1, n_x), dtype=np.float32)
-# x_fit[0, 0] = np.copy(Y_sys[0, 0])
-# x_fit[0, 1] = 0
-# x_step = x0
-# x0 = torch.tensor(x_fit[[0], :], dtype=torch.float32)
-
 x0 = x_fit[[0], :].detach()
 
-u = torch.tensor(U)  # [:, None, :]  , :
+u = torch.tensor(U)  
 y = Y_sys[:, np.newaxis]
-
 
 simulator0 = ForwardEuler(model=model, dt=1.0)
 start_time = time.time()
@@ -224,21 +203,13 @@ print(f"\n NN  time: {time.time() - start_time:.2f}")
 start_time = time.time()
 xhat_data = simulator(x0, u, y)
 print(f"\nregulator time: {time.time() - start_time:.2f}")
-# ----- optimization inside NN loop, stepwise --------
+
 yhat = xhat_data[:, 0]
-# stop = simulator.stop
-# correction = simulator.correction
-# print(f'update at {correction}')
-# print(f'stop at {stop}')
 
 print("nn R^2 = ", R2(Y_sys[:, 0], yhat0))
-
 print("inference evolution R^2 = ", R2(Y_sys[:, 0], yhat))
 
 time_exp = np.arange(N) * ts *10**(6)
-
-
-
 
 fig, ax = plt.subplots(2, 1, sharex=True, tight_layout=True, figsize=(9, 6))
 ax[0].plot(time_exp, Y_sys, 'g', label='$y$')
@@ -256,10 +227,4 @@ ax[1].set_ylabel("(b)")
 ax[1].legend()
 ax[1].legend(bbox_to_anchor=(0.9, 0.6))
 ax[1].set_xlabel('Time($\mu s$)')
-
-
-
-
-
-
 
