@@ -190,7 +190,6 @@ y_lag_1 = 0
 y_lag_2 = 0
 for i in range(2, N):
     endog = Y_sys[i]
-    # x = U[i]
     x = yhat0[i]
     exog = np.column_stack((y_lag_1, y_lag_2, x))
     if i < train_time:
