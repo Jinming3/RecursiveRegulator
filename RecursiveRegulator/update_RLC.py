@@ -173,7 +173,7 @@ threshold2 = 1#0.98  # stop retrain
 update = 12010
 ur=65
 
-off = 0 #int(2* 10**(-3)/ ts ) #total 3ms = 3000us
+off = 0 
 n = 2
 t = n +n*ur + n
 factor = PEM(n, t, N, ur=ur)
