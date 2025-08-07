@@ -10,12 +10,12 @@ https://doi.org/10.1038/s44172-025-00477-4
 
 Language: Python 3.11
 
-# Method and demonstrate 
+# Method and demonstration
 ### Design
 
 The method's functions are in file "header" and "pem".
 
-### Data and demonstrate 
+### Data and demonstration 
 
 In folder RecursiveRegulator, there are system examples ready to run.
 
