@@ -6,7 +6,7 @@ Recursive regulator: a deep-learning and real-time model adaptation strategy for
 https://doi.org/10.1038/s44172-025-00477-4
 
 
-# Installation requirements:
+# Installation requirement:
 
 Language: Python 3.11
 
