@@ -1,17 +1,14 @@
-
 import pandas as pd
 import numpy as np
 import torch
 import time
 import matplotlib.pyplot as plt
 import matplotlib
-
 matplotlib.use("TkAgg")
 import os
 import sys
 import math
 from scipy import signal
-
 from header import R2, normalize, ForwardEuler, NeuralStateSpaceModel_qu
 import matplotlib.pylab as pylab
 
@@ -25,7 +22,6 @@ params = {
     'legend.labelspacing': 0.3
 }
 pylab.rcParams.update(params)
-
 
 # np.random.seed(3)
 # torch.manual_seed(3407)
@@ -46,24 +42,16 @@ def white(bandwidth, time_all, std_devi, dt): # Sample rate in Hz # Duration of 
     return sampled_noise
 
 
-def sinwave(dt, i, w, A): #=0.1,=1.0
-    # out = []
-
-    # for k in range(int(time / dt)):
+def sinwave(dt, i, w, A): 
     x = A * np.cos(w * i * math.pi * dt)
-    # x = A * np.sin(w*k * math.pi* dt)
-    # out.append(x)
     return x
 
 
 # -- tri wave ---
-def triangle(dt, i, A=2):  # , time_all
-    out = []
+def triangle(dt, i, A=2):  
     p = 8
-    # for k in range(int(time_all / dt)):
-    #     x = 2 * np.abs(k * dt / p - math.floor(k * dt / p + 0.5))  # 2 * -1
     x = A* np.abs(i * dt / p - math.floor(i * dt / p + 0.5))
-    # out.append(x)
+  
     return x
 
 # ----
@@ -74,7 +62,6 @@ class rlc:
         self.dvc = dvc  # derivative
         self.dil = dil  # derivative
         self.dt = dt
-
 
     def get_y(self, u, noise_process=0, noise_measure=0):
         self.u = u
@@ -89,63 +76,54 @@ class rlc:
 
 time_all = 2 *10**(-3)  # 2ms
 dt=0.5*10**(-6)
-
 L0=50*10**(-6)
-
 C = 270 * 10 ** (-9)  #capacitor
-R=3 #resistor 5 #
+R=3 #resistor 
 bandwidth= 300e2 #150e2 #150e3
 std_devi = 80
 
 # -------
 
 circuit = rlc(vc=0, il=0, dvc=0, dil=0, dt=dt)
-
 v_in = white(bandwidth, time_all, std_devi, dt)
 Y_sys = []
 U = []
 X = []
 
 for i in range(int(time_all/dt)):
-    Y = circuit.get_y(v_in[i], noise_measure=0, noise_process=0) #       1  ,sinwave(dt=dt, i=i, w=bandwidth, A=1)
+    Y = circuit.get_y(v_in[i], noise_measure=0, noise_process=0) 
     Y_sys.append(Y)
     U.append(circuit.u)
     X.append([circuit.vc, circuit.il])
 
 X = np.array(X).astype(np.float32)
-np.savetxt('data_rlc_Y.txt', Y_sys, delimiter=',')
-np.savetxt('data_rlc_U.txt', U, delimiter=',')
-np.savetxt('data_rlc_X.txt', X) # , delimiter=','
+# np.savetxt('data_rlc_Y.txt', Y_sys, delimiter=',')
+# np.savetxt('data_rlc_U.txt', U, delimiter=',')
+# np.savetxt('data_rlc_X.txt', X) # , delimiter=','
 
-dt = torch.tensor(dt, dtype=torch.float32)  #
+dt = torch.tensor(dt, dtype=torch.float32)  
 Y_sys = np.reshape(Y_sys, (-1, 1)).astype(np.float32)
 U = np.reshape(U, (-1, 1)).astype(np.float32)
 
 N = len(Y_sys)
-
-
 Y_sys = normalize(Y_sys, 1)
 U = normalize(U, 1)
 X = normalize(X, 1)
 
 # -----------------------------------------------------------------------
-error_scale = 0.01#10 #
+error_scale = 0.01
 num_epoch = 10000
 batch_num = 64
 batch_length = 64
-# batch_length = 128
-# batch_length = 128
+
 weight = 1.0  # initial state weight in loss function
 lr = 0.001
-# lr = 0.001
 n_x = 2
 
 
 x_fit = torch.tensor(X, dtype=torch.float32, requires_grad=True)
 model = NeuralStateSpaceModel_qu()
-# model = MechanicalSystem(dt=dt)
-# simulator = header.RK4(model=model, dt=dt)
-simulator = ForwardEuler(model=model, dt=1.0)  #, dt=dt # not acceleration, no dt
+simulator = ForwardEuler(model=model, dt=1.0)  
 params_net = list(simulator.model.parameters())
 params_initial = [x_fit]
 optimizer = torch.optim.Adam([
@@ -164,31 +142,24 @@ def get_batch(batch_num=batch_num, batch_length=batch_length):
     batch_y = torch.tensor(Y_sys[batch_index])
     return batch_x0, batch_x, batch_u, batch_y
 
-
 # compute initial error as scale.
 with torch.no_grad():
     batch_x0, batch_x, batch_u, batch_y = get_batch()
     batch_xhat = simulator(batch_x0, batch_u)
-    # traced_simulator = torch.jit.trace(simulator, (batch_x0, batch_u))
     batch_yhat = batch_xhat[:, :, [0]]
     error_init = batch_yhat - batch_y
-    # error_scale = torch.sqrt(torch.mean(error_init ** 2, dim=(0, 1)))  # root MSE
+    
 
 LOSS = []
-
 start_time = time.time()
 for epoch in range(num_epoch):
     batch_x0, batch_x, batch_u, batch_y = get_batch()
-    # batch_xhat = traced_simulator(batch_x0, batch_u)
     batch_xhat = simulator(batch_x0, batch_u)
     # output loss
     batch_yhat = batch_xhat[:, :, [0]]
     error_out = batch_yhat - batch_y
     loss_out = torch.mean((error_out / error_scale) ** 2)  # divided by scale
-    # state estimate loss
-    # error_state = (batch_xhat - batch_x) / error_scale
-    # loss_state = torch.mean(error_state ** 2)  # MSE
-    # loss = loss_out + weight * loss_state
+    
     loss = loss_out
     LOSS.append(loss.item())
 
@@ -226,13 +197,11 @@ x0_vali = torch.tensor(x0_vali)
 u_vali = torch.tensor(U)
 with torch.no_grad():
     xhat_vali = simulator(x0_vali[None, :], u_vali[:, None])
-    # xhat_vali = simulator(x0_vali, u_vali)
-
     xhat_vali = xhat_vali.detach().numpy()
     xhat_vali = xhat_vali.squeeze(1)
     yhat_vali = xhat_vali[:, 0]
 
-print("R^2 = ", R2(Y_sys[:, 0], yhat_vali))  # .detach().numpy()
+print("R^2 = ", R2(Y_sys[:, 0], yhat_vali))  
 
 fig, ax = plt.subplots(2, 1, sharex=True)
 ax[0].plot(Y_sys, 'g', label='y')
