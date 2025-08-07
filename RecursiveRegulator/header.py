@@ -272,7 +272,7 @@ class ForwardEulerPEM(nn.Module):
             # if self.update == 1:  # with bar_x in x_step, # update non-stop:
             #     u_step = u[q]
             #     dx = self.model(x_step, u_step)
-            #     x_step = x_step + dx * self.dt  #+ torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
+            #     x_step = x_step + dx * self.dt + torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
             #     # self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
             #     y_nn = x_step[:, 0].clone().detach().numpy()
             #     u_in = y_nn
@@ -281,7 +281,7 @@ class ForwardEulerPEM(nn.Module):
             #     self.xhat_data[q, :] = x_out
             #     x_step = torch.tensor(x_out, dtype=torch.float32)  # ! update input to NN !
             #     match = R2(y[q - self.sensitivity:q, 0], self.xhat_data[q - self.sensitivity:q, 0])
-            #     # match = R2(y[q - self.sensitivity:q, 0, 0], self.xhat_data[q - self.sensitivity:q, 0])
+            #     
             #     q = q + 1
 
             # # update with threshold,  adding resting PEM  # use this
@@ -328,8 +328,7 @@ class ForwardEulerPEM(nn.Module):
             #             y_nn = x_step[:, 0].clone().detach().numpy()
             #             u_in = x_step.clone().detach().numpy().T
             #             self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-            #             # self.factor.pem_one(y[q] - y_nn, y_nn, on=True)
-
+            #             
             #             self.y_pem.append([self.factor.Xhat[0, 0], q])
             #             self.y_pem0.append([None, q])
 
@@ -338,7 +337,7 @@ class ForwardEulerPEM(nn.Module):
             #             self.xhat_data[q, :] = x_out
             #             x_step = torch.tensor(x_out, dtype=torch.float32)  # don't delete this ! update input to NN !
             #             match = R2(y[q - self.sensitivity:q, 0], self.xhat_data[q - self.sensitivity:q, 0])
-            #             # match = R2(y[q - self.sensitivity:q, 0, 0], self.xhat_data[q - self.sensitivity:q, 0])
+            #             
 
             #             # if q > self.sensitivity:
             #             #     match = R2(y[q - self.sensitivity:q, 0], self.xhat_data[q - self.sensitivity:q, 0])
@@ -355,250 +354,14 @@ class ForwardEulerPEM(nn.Module):
             #     y_nn = x_step[:, 0].clone().detach().numpy()
             #     u_in = x_step.clone().detach().numpy().T
             #     self.factor.pem_one(y[q] - y_nn, u_in, on=False)
-            #     # print(q)
-            #     # self.factor.pem_one(y[q]*0 - y_nn, y_nn, on=False)  # for pem n-step ahead
+            #     
             #     q = q + 1
 
-            # # same as 5, only for tank, y = x1
-            # if self.update == 6:  # for tanks, with regulator added
-            #     u_step = u[q]
-            #     dx = self.model(x_step, u_step)
-            #     x_step = x_step + dx * self.dt  #+ torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
-            #     self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect
-
-            #     # --------------------------------------------------------
-            #     # y_nn = x_step[:, 0].clone().detach().numpy()
-            #     # # u_in = self.xhat_data[q - 1, [0]]  # ==y_out
-            #     # u_in = y_nn
-            #     # self.factor.pem_one(y[q] - y_nn, u_in, on=False)
-            #     # y_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #     # self.xhat_data[q, :] = y_out  # collect
-            #     # x_step = torch.tensor(y_out, dtype=torch.float32)  # ! update input to NN !
-            #     # --------------------------------------------------------
-            #     # self.y_pem0[q, :] = np.copy(self.factor.Xhat[0, 0])  ## different color
-            #     self.y_pem0.append([self.factor.Xhat[1, 0], q])
-            #     self.y_pem.append([None, q])
-            #     # self.y_pem0[q] = np.copy(self.factor.Xhat[0, 0])
-
-            #     self.Thehat[q, :] = np.copy(self.factor.Thehat[:, 0])
-
-            #     match = R2(y[q - self.sensitivity:q, 0, 0], self.xhat_data[q - self.sensitivity:q, 1])
-            #     if match < self.threshold1:
-
-            #         print(f'update at {q}, with R2= {match}')
-            #         self.correction.append(q)
-            #         while q < self.N:
-            #             u_step = u[q]
-            #             dx = self.model(x_step, u_step)
-            #             x_step = x_step + dx * self.dt  #+ torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
-
-            #             y_nn = x_step[:, 1].clone().detach().numpy()
-            #             # u_in = self.xhat_data[q - 1, [0]]  # ==y_out
-            #             u_in = y_nn
-            #             self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-
-            #             # self.y_pem[q, :] = np.copy(self.factor.Xhat[0, 0])  # adding
-            #             self.y_pem.append([self.factor.Xhat[1, 0], q])
-            #             self.y_pem0.append([None, q])
-            #             # self.y_pem[q] = np.copy(self.factor.Xhat[0, 0])
-            #             self.Thehat[q, :] = np.copy(self.factor.Thehat[:, 0])
-            #             y_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #             # print('shape,', y_out.shape)
-            #             self.xhat_data[q, :] = y_out
-            #             x_step = torch.tensor(y_out, dtype=torch.float32)  # ! update input to NN !
-
-            #             match = R2(y[q - self.sensitivity:q, 0, 0], self.xhat_data[q - self.sensitivity:q, 1])
-            #             if match > self.threshold2:
-            #                 self.stop.append(q)
-            #                 print(f'finish at  {q}, with R2= {match}')
-            #                 self.factor.pem_one(y[q] - y_nn, u_in, on=False)
-            #                 break
-            #             q = q + 1
-            #     q = q + 1
-
-            # if self.update == 12:  # case 1 but with u size 2, input x_nn directly, works!
-            #     u_step = u[q]
-            #     dx = self.model(x_step, u_step)
-            #     x_step = x_step + dx * self.dt  #+ torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
-            #     # self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
-            #     y_nn = x_step[:, 0].clone().detach().numpy()
-            #     u_in = x_step.clone().detach().numpy().T
-            #     self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-            #     x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #     self.xhat_data[q, :] = x_out
-            #     x_step = torch.tensor(x_out, dtype=torch.float32)  # ! update input to NN !
-            #     match = R2(y[q - self.sensitivity:q, 0], self.xhat_data[q - self.sensitivity:q, 0])
-            #     # match = R2(y[q - self.sensitivity:q, 0, 0], self.xhat_data[q - self.sensitivity:q, 0])
-            #     q = q + 1
-
-            # if self.update == 1200:  # case 121, stop pem update at given time, self.train, u_in = 64, best
-            #     u_step = u[q]
-            #     dx = self.model(x_step, u_step)
-            #     x_step = x_step + dx * self.dt + torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
-            #     self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
-            #     q = q + 1
-            #     while q < self.train:
-            #         u_step = u[q]
-            #         dx = self.model(x_step, u_step)
-            #         x_step = x_step + dx * self.dt
-            #         y_nn = x_step[:, 0].clone().detach().numpy()
-            #         # u_in = x_step.clone().detach().numpy().T
-            #         u_in = self.model.out_k.clone().detach().numpy().T
-            #         # print(f'{q} Bhat,', self.factor.Bhat)
-            #         self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-            #         x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #         # self.pem_out.append(self.factor.Xhat[:, 0])
-            #         self.xhat_data[q, :] = x_out
-            #         x_step = torch.tensor(x_out, dtype=torch.float32)
-            #         q = q + 1
-
-            #     u_in = self.model.out_k.clone().detach().numpy().T
 
 
-            #     self.factor.pem_one(0, u_in, on=False)  #(y[q-1] - y_nn)*
 
-            # if self.update == 1201:  # case 1200, stop pem update at given time, self.train, u_in = 64, regulator G only x not u
-            #     u_step = u[q]
-            #     dx = self.model(x_step, u_step)
-            #     x_step = x_step + dx * self.dt + torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
-            #     self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
-            #     q = q + 1
-            #     while q < self.train:
-            #         u_step = u[q]
-            #         dx = self.model(x_step, u_step)
-            #         x_step = x_step + dx * self.dt
-            #         y_nn = x_step[:, 0].clone().detach().numpy()
-            #         # u_in = x_step.clone().detach().numpy().T
-            #         u_in = np.concatenate((self.model.out_k.clone().detach().numpy().T, u_step), axis=0)
-            #         # u_in =self.model.out_k.clone().detach().numpy().T
-            #         # print(f'{q} Bhat,', self.factor.Bhat)
-            #         self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-            #         x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #         # self.pem_out.append(self.factor.Xhat[:, 0])
-            #         self.xhat_data[q, :] = x_out
-            #         x_step = torch.tensor(x_out, dtype=torch.float32)
-            #         q = q + 1
+            
 
-            #     u_in = np.concatenate((self.model.out_k.clone().detach().numpy().T, u_step), axis=0)
-            #     # u_in = self.model.out_k.clone().detach().numpy().T
-
-            #     # print(f'{q} Bhat,', self.factor.Bhat)
-            #     self.factor.pem_one(0, u_in, on=False)  #(y[q-1] - y_nn)*
-
-            # if self.update == 121:  # case 12 but stop pem update at given time, self.train
-            #     u_step = u[q]
-            #     dx = self.model(x_step, u_step)
-            #     x_step = x_step + dx * self.dt + torch.tensor(self.factor.Xhat[:, 0], dtype=torch.float32)
-            #     self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
-
-            #     while q < self.train:
-            #         u_step = u[q]
-            #         dx = self.model(x_step, u_step)
-            #         x_step = x_step + dx * self.dt
-            #         y_nn = x_step[:, 0].clone().detach().numpy()
-            #         u_in = x_step.clone().detach().numpy().T
-            #         # print(f'{q} Bhat,', self.factor.Bhat)
-            #         self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-            #         x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #         self.pem_out.append(self.factor.Xhat[:, 0])
-            #         self.xhat_data[q, :] = x_out
-            #         x_step = torch.tensor(x_out, dtype=torch.float32)
-
-            #         # if q>= self.train:
-            #         #     break
-            #         q = q + 1
-
-            #     u_in = x_step.clone().detach().numpy().T
-            #     y_nn = x_step[:, 0].clone().detach().numpy()
-            #     # print(f'{q} Bhat,', self.factor.Bhat)
-            #     self.factor.pem_one(0, u_in, on=False)  #(y[q-1] - y_nn)*
-            #     self.pem_out.append(self.factor.Xhat[:, 0])
-            #     q = q + 1
-            # # works, in use, do not change <<<<< ---
-            # # # --->>>>  work, but not solid---
-
-            # if self.update == 120:  # case 121, stop pem update at given time, self.train, u_in = 64, experiment of pem matrix
-            #     u_step = u[q]
-            #     dx = self.model(x_step, u_step)
-            #     self.ignition = int(200)
-            #     self.age = int(4000)
-
-            #     x_step = x_step + dx * self.dt + torch.tensor(self.factor.Xhat[:, 0],
-            #                                                   dtype=torch.float32) * ignition_true
-            #     self.err[q] = y[q] - x_step[0, 0].clone().detach().numpy()
-            #     # x_step = x_step
-            #     self.xhat_data[q, :] = x_step[0, :].clone().detach().numpy()  # collect output of NN
-            #     self.pem_out[q, :] = self.factor.Xhat[:, 0]
-            #     self.A_data[q, :] = self.factor.Ahat[1, :]
-            #     self.B_data[q, :] = self.factor.Bhat[0:2, 0]
-            #     q = q + 1
-
-            #     while q >= self.ignition and q < self.age:  # 200<=q<1500
-
-                    # ignition_true = 1  # pem working, no aging
-                    # u_step = u[q]
-                    # dx = self.model(x_step, u_step)
-                    # x_step = x_step + dx * self.dt
-                    # y_nn = x_step[:, 0].clone().detach().numpy()
-                    # # u_in = x_step.clone().detach().numpy().T
-                    # u_in = self.model.out_k.clone().detach().numpy().T
-                    # # print(f'{q} Bhat,', self.factor.Bhat)
-                    # self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-                    # x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-                    # # self.pem_out.append(self.factor.Xhat[:, 0])
-                    # self.xhat_data[q, :] = x_out
-                    # self.pem_out[q, :] = self.factor.Xhat[:, 0]
-                    # self.A_data[q, :] = self.factor.Ahat[1, :]
-                    # self.B_data[q, :] = self.factor.Bhat[0:2, 0]
-                    # self.err[q] = y[q] - x_step[0, 0].clone().detach().numpy()
-                    # x_step = torch.tensor(x_out, dtype=torch.float32)
-
-                    # q = q + 1
-
-            #     while q < self.train and q > self.age:  # 1500--3000
-            #         self.model.q_bar_age_true = 1
-            #         u_step = u[q]
-            #         dx = self.model(x_step, u_step)
-            #         x_step = x_step + dx * self.dt
-            #         y_nn = x_step[:, 0].clone().detach().numpy()
-            #         # u_in = x_step.clone().detach().numpy().T
-            #         u_in = self.model.out_k.clone().detach().numpy().T
-            #         # print(f'{q} Bhat,', self.factor.Bhat)
-            #         self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-            #         x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]
-            #         # self.pem_out.append(self.factor.Xhat[:, 0])
-            #         self.xhat_data[q, :] = x_out
-            #         self.pem_out[q, :] = self.factor.Xhat[:, 0]
-            #         self.A_data[q, :] = self.factor.Ahat[1, :]
-            #         self.B_data[q, :] = self.factor.Bhat[0:2, 0]
-            #         self.err[q] = y[q] - x_step[0, 0].clone().detach().numpy()
-            #         x_step = torch.tensor(x_out, dtype=torch.float32)
-            #         q = q + 1
-
-            #     u_in = self.model.out_k.clone().detach().numpy().T
-            #     self.factor.pem_one(0, u_in, on=False)  # (y[q-1] - y_nn)*
-
-            #     # q = q + 1
-
-            # # PEM running from beginning, use steps as switch
-            # if self.update == 2:
-            #     u_step = u[q]
-                # dx = self.model(x_step, u_step)
-                # x_step = x_step + dx * self.dt
-                # y_nn = x_step[:, 0].clone().detach().numpy()
-                # u_in = y_nn
-                # # if q <= self.train or q % self.step == 0:
-                # if q <= self.train or all(np.remainder(q, self.step)) == 0:
-                #     self.factor.pem_one(y[q] - y_nn, u_in, on=True)
-                #     self.on.append(q)
-                # if q > self.train:
-                #     self.factor.pem_one(y[q] - y_nn, u_in, on=False)
-                # x_out = x_step.clone().detach().numpy() + self.factor.Xhat[:, 0]  # must have [:, 0], from 2x1 to 1x2
-                # self.xhat_data[q, :] = x_out
-                # x_step = torch.tensor(x_out, dtype=torch.float32)  # ! update input to NN !
-                # match = R2(y[q - self.sensitivity:q, 0], self.xhat_data[q - self.sensitivity:q, 0])
-                # # match = R2(y[q - self.sensitivity:q, 0, 0], self.xhat_data[q - self.sensitivity:q, 0])
-                # q = q + 1
 
 
         return self.xhat_data
