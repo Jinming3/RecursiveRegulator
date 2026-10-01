@@ -77,8 +77,8 @@ class PEM(object):
 
         self.Thehat_old = np.random.rand(self.t, 1) * 0.1
         # --------------------------------------------
-        self.P_old2 = np.eye(t, t)*0.09
-        self.Psi_old2 = np.eye(t, 1)*0.9
+        self.P_old2 = np.eye(t, t) 
+        self.Psi_old2 = np.ones((t, 1)) 
         self.Xhat_old = np.zeros((self.n, 1)) 
 
         # ---------------------------------------------
